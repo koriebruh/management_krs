@@ -11,6 +11,8 @@ var (
 	ErrValidationFailed   = errors.New("validation failed")
 	ErrPasswordEncryption = errors.New("password encryption failed")
 	ErrUserRegistration   = errors.New("user registration failed")
+	ErrLoginFailed        = errors.New("login failed ")
+	ErrNotFound           = errors.New("data not found")
 )
 
 func ErrResponse(ctx *fiber.Ctx, err error) error {
@@ -19,6 +21,18 @@ func ErrResponse(ctx *fiber.Ctx, err error) error {
 		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
 			Code:   http.StatusBadRequest,
 			Status: "Validation Error",
+			Data:   err.Error(),
+		})
+	case errors.Is(err, ErrLoginFailed):
+		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "Failed Login",
+			Data:   err.Error(),
+		})
+	case errors.Is(err, ErrNotFound):
+		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "Data not found",
 			Data:   err.Error(),
 		})
 	case errors.Is(err, ErrPasswordEncryption):

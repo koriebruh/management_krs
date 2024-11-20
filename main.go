@@ -24,6 +24,9 @@ func main() {
 
 	app.Get("/", hellobg)
 	app.Post("api/auth/register", authController.Register)
+	app.Post("api/auth/login", authController.Login)
+	authorized := app.Group("/", conf.JWTAuthMiddleware)
+	authorized.Get("api/user", authController.CurrentAcc)
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {

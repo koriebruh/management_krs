@@ -14,7 +14,7 @@ import (
 
 type AuthService interface {
 	Register(ctx context.Context, req dto.RegisterReq) error
-	Login(ctx context.Context, req dto.LoginReq) (dto.LoginRes, error)
+	Login(ctx context.Context, req dto.LoginReq) (string, error)
 	CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error)
 }
 
@@ -57,35 +57,57 @@ func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq
 	})
 }
 
-func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (dto.LoginRes, error) {
-	var result dto.LoginRes
+func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (string, error) {
+	var userNIM string
 
 	if err := service.Validate.Struct(req); err != nil {
-		return result, fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
+		return userNIM, fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
 	}
 
-	return service.DB.Transaction(func(tx *gorm.DB) (dto.LoginRes, error) {
-		loginResponse, err := service.UserRepository.Login(ctx, tx, domain.User{
+	err := service.DB.Transaction(func(tx *gorm.DB) error {
+		loginData := domain.User{
 			NIM:      req.NIM,
 			Password: req.Password,
-		})
+		}
+
+		result, err := service.UserRepository.Login(ctx, tx, loginData)
 		if err != nil {
-			return result, fmt.Errorf("%w: %v", helper.ErrUserLogin, err)
+			return fmt.Errorf("%w: %v", helper.ErrLoginFailed, err)
 		}
+		userNIM = *result
 
-		result = dto.LoginRes{
-			NIM:      loginResponse.NIM,
-			Username: loginResponse.Username,
-			Email:    loginResponse.Email,
-			// Tambahkan token jika diperlukan
-		}
-
-		return result, nil
+		return nil
 	})
 
+	if err != nil {
+		return "", err
+	}
+
+	return userNIM, nil
 }
 
 func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error) {
-	//TODO implement me
-	panic("implement me")
+	var result dto.CurrentUser
+
+	err := service.DB.Transaction(func(tx *gorm.DB) error {
+		user, err := service.UserRepository.FindByNIM(ctx, tx, nim)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		result = dto.CurrentUser{
+			NIM:      user.NIM,
+			Username: user.Username,
+			Email:    user.Email,
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return dto.CurrentUser{}, err
+	}
+
+	return result, nil
+
 }

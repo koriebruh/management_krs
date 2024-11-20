@@ -1,4 +1,4 @@
-### GET request to example server
+### REGISTER
 POST http://localhost:3000/api/auth/register
 Accept: application/json
 Content-Type: application/json
@@ -11,4 +11,18 @@ Content-Type: application/json
 }
 
 
-###
+### LOGIN
+POST http://localhost:3000/api/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nim":"a11.2022.14616",
+  "password":"jamal123"
+}
+
+### CURRENT USER
+GET http://localhost:3000/api/user
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW0iOiJhMTEuMjAyMi4xNDYxNiIsImlzcyI6ImtvcmllYnJ1aCIsImV4cCI6MTczMjEyMzU2MX0.dyuAXzl-deHBC6hmOaiY9zVyhYFpU3bOFvOox5KWAgU

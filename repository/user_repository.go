@@ -12,7 +12,7 @@ import (
 type UserRepository interface {
 	Register(ctx context.Context, db *gorm.DB, user domain.User) error
 	Login(ctx context.Context, db *gorm.DB, user domain.User) (*string, error)
-	FindById(ctx context.Context, db *gorm.DB, id int) (*domain.User, error)
+	FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.User, error)
 }
 
 type UserRepositoryImpl struct {
@@ -71,14 +71,14 @@ func (r UserRepositoryImpl) Login(ctx context.Context, db *gorm.DB, user domain.
 		return nil, fmt.Errorf("login failed decrypt : %v", errPass)
 	}
 
-	return result.NIM, nil
+	return &result.NIM, nil
 
 }
 
-func (r UserRepositoryImpl) FindById(ctx context.Context, db *gorm.DB, id int) (*domain.User, error) {
+func (r UserRepositoryImpl) FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.User, error) {
 	var result *domain.User
 
-	if err := db.WithContext(ctx).First(&result, id).Error; err != nil {
+	if err := db.WithContext(ctx).Where("nim = ?", NIM).First(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, fmt.Errorf("product not found")
 		}
