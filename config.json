@@ -1,0 +1,13 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 3000
+  },
+  "database": {
+    "user": "root",
+    "pass": "korie123",
+    "host": "localhost",
+    "port": "3306",
+    "name": "order_management"
+  }
+}

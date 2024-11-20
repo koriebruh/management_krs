@@ -1,0 +1,14 @@
+### GET request to example server
+POST http://localhost:3000/api/auth/register
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nim":"a11.2022.14616",
+  "username":"jamal",
+  "password":"jamal123",
+  "email":"jamal@gmail"
+}
+
+
+###
