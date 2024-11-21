@@ -55,7 +55,7 @@ func (controller AuthControllerImpl) Login(ctx *fiber.Ctx) error {
 	}
 
 	//SETTING GENERATE JWT
-	expTime := time.Now().Add(time.Hour * 1) // << KADALUARSA DALAM 5 JAM
+	expTime := time.Now().Add(time.Minute * 3) // << KADALUARSA DALAM 3 minute
 	claims := conf.JWTClaim{
 		NIM: nimUser,
 		RegisteredClaims: jwt.RegisteredClaims{

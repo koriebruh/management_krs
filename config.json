@@ -9,5 +9,11 @@
     "host": "localhost",
     "port": "3306",
     "name": "order_management"
+  },
+  "redis": {
+    "addr": "127.0.0.1:6379",
+    "pass": "",
+    "db": 0,
+    "Protocol": 3
   }
 }

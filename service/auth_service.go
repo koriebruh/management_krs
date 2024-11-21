@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
@@ -10,6 +11,8 @@ import (
 	"koriebruh/try/dto"
 	"koriebruh/try/helper"
 	"koriebruh/try/repository"
+	"log"
+	"time"
 )
 
 type AuthService interface {
@@ -22,10 +25,11 @@ type AuthServiceImpl struct {
 	repository.UserRepository
 	*gorm.DB
 	*validator.Validate
+	repository.CacheRepository
 }
 
-func NewAuthService(userRepository repository.UserRepository, DB *gorm.DB, validate *validator.Validate) *AuthServiceImpl {
-	return &AuthServiceImpl{UserRepository: userRepository, DB: DB, Validate: validate}
+func NewAuthService(userRepository repository.UserRepository, DB *gorm.DB, validate *validator.Validate, cacheRepository repository.CacheRepository) *AuthServiceImpl {
+	return &AuthServiceImpl{UserRepository: userRepository, DB: DB, Validate: validate, CacheRepository: cacheRepository}
 }
 
 func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq) error {
@@ -87,9 +91,27 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 }
 
 func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error) {
+	// CHECKING IN CACHE
+
+	cacheKey := "user:" + nim
+	log.Printf("Cache key: %s", cacheKey)
+
+	cacheUser, err := service.CacheRepository.Get(ctx, "user:"+nim)
+	if err == nil {
+		var cachedResult dto.CurrentUser
+		if err := json.Unmarshal([]byte(cacheUser), &cachedResult); err == nil {
+			log.Printf("Get data from cache: %v", cachedResult)
+			return cachedResult, nil
+		} else {
+			log.Printf("Failed to unmarshal cached user: %v", err)
+		}
+	} else {
+		log.Printf("Failed to get from cache: %v", err)
+	}
+
 	var result dto.CurrentUser
 
-	err := service.DB.Transaction(func(tx *gorm.DB) error {
+	err = service.DB.Transaction(func(tx *gorm.DB) error {
 		user, err := service.UserRepository.FindByNIM(ctx, tx, nim)
 		if err != nil {
 			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
@@ -99,6 +121,12 @@ func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.
 			NIM:      user.NIM,
 			Username: user.Username,
 			Email:    user.Email,
+		}
+
+		cacheErr := service.CacheRepository.Set(ctx, "user:"+nim, result, 1*time.Hour) // SAVE IN 1 HOUR
+		if cacheErr != nil {
+			// LOGGING ERROR CACHE
+			log.Printf("Failed to cache user: %v", cacheErr)
 		}
 
 		return nil

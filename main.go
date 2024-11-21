@@ -15,9 +15,12 @@ func main() {
 	config := conf.GetConfig()
 	db := conf.InitDB()
 	validate := validator.New()
+	rdb := conf.GetRedis()
 
+	//DI INJECT
+	cacheRepository := repository.NewRedisCacheRepository(rdb)
 	userRepository := repository.NewUserRepository()
-	authService := service.NewAuthService(userRepository, db, validate)
+	authService := service.NewAuthService(userRepository, db, validate, cacheRepository)
 	authController := controller.NewAuthController(authService)
 
 	app := fiber.New()

@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server
 	DataBase
+	RedisDB
 }
 
 type Server struct {
@@ -22,6 +23,13 @@ type DataBase struct {
 	Host string
 	Port string
 	Name string
+}
+
+type RedisDB struct {
+	Addr     string
+	Password string
+	DB       int
+	Protocol int
 }
 
 func GetConfig() *Config {
@@ -49,6 +57,12 @@ func GetConfig() *Config {
 			Host: cnf.GetString("database.host"),
 			Port: cnf.GetString("database.port"),
 			Name: cnf.GetString("database.name"),
+		},
+		RedisDB: RedisDB{
+			Addr:     cnf.GetString("redis.addr"),
+			Password: cnf.GetString("redis.pass"),
+			DB:       cnf.GetInt("redis.db"),
+			Protocol: cnf.GetInt("redis.protocol"),
 		},
 	}
 }
