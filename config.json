@@ -8,7 +8,7 @@
     "pass": "korie123",
     "host": "localhost",
     "port": "3307",
-    "name": "krs-management"
+    "name": "krs_management"
   },
   "redis": {
     "addr": "localhost:6379",

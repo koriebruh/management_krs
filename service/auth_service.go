@@ -92,7 +92,6 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 
 func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error) {
 	cacheKey := fmt.Sprintf("user:%s", nim)
-	log.Printf("DEBUG - Looking for cache with key: %s", cacheKey)
 
 	// Try get from cache
 	cacheUser, err := service.CacheRepository.Get(ctx, cacheKey)
