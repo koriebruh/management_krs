@@ -23,11 +23,11 @@ func GetRedis() *redis.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	_, err := rdb.Ping(ctx).Result()
+	result, err := rdb.Ping(ctx).Result()
 	if err != nil {
 		log.Fatalf("failed connec redis: %v", err)
 	}
 
-	log.Println("connected redis")
+	log.Println("connected redis response: " + result)
 	return rdb
 }

@@ -1,5 +1,5 @@
-create database order_management;
-use order_management;
+create database krs_management;
+use krs_management;
 
 show tables ;
 

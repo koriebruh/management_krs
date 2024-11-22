@@ -91,22 +91,21 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 }
 
 func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error) {
-	// CHECKING IN CACHE
+	cacheKey := fmt.Sprintf("user:%s", nim)
+	log.Printf("DEBUG - Looking for cache with key: %s", cacheKey)
 
-	cacheKey := "user:" + nim
-	log.Printf("Cache key: %s", cacheKey)
-
-	cacheUser, err := service.CacheRepository.Get(ctx, "user:"+nim)
+	// Try get from cache
+	cacheUser, err := service.CacheRepository.Get(ctx, cacheKey)
 	if err == nil {
+		log.Printf("DEBUG - Found in cache: %s", cacheUser)
 		var cachedResult dto.CurrentUser
 		if err := json.Unmarshal([]byte(cacheUser), &cachedResult); err == nil {
-			log.Printf("Get data from cache: %v", cachedResult)
+			log.Printf("DEBUG - Successfully unmarshaled: %+v", cachedResult)
 			return cachedResult, nil
-		} else {
-			log.Printf("Failed to unmarshal cached user: %v", err)
 		}
+		log.Printf("DEBUG - Unmarshal error: %v", err)
 	} else {
-		log.Printf("Failed to get from cache: %v", err)
+		log.Printf("DEBUG - Cache get error: %v", err)
 	}
 
 	var result dto.CurrentUser
@@ -123,7 +122,7 @@ func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.
 			Email:    user.Email,
 		}
 
-		cacheErr := service.CacheRepository.Set(ctx, "user:"+nim, result, 1*time.Hour) // SAVE IN 1 HOUR
+		cacheErr := service.CacheRepository.Set(ctx, fmt.Sprint("user:"+nim), result, 15*time.Minute) // SAVE IN 1 HOUR
 		if cacheErr != nil {
 			// LOGGING ERROR CACHE
 			log.Printf("Failed to cache user: %v", cacheErr)

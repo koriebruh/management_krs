@@ -86,7 +86,7 @@ func (controller AuthControllerImpl) CurrentAcc(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(dto.WebResponse{
 		Code:   http.StatusCreated,
-		Status: "User Registered Successfully",
+		Status: "OK",
 		Data:   acc,
 	})
 

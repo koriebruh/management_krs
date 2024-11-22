@@ -7,13 +7,13 @@
     "user": "root",
     "pass": "korie123",
     "host": "localhost",
-    "port": "3306",
-    "name": "order_management"
+    "port": "3307",
+    "name": "krs-management"
   },
   "redis": {
-    "addr": "127.0.0.1:6379",
+    "addr": "localhost:6379",
     "pass": "",
     "db": 0,
-    "Protocol": 3
+    "protocol": 3
   }
 }

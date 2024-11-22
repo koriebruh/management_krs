@@ -3,7 +3,9 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/redis/go-redis/v9"
+	"log"
 	"time"
 )
 
@@ -22,16 +24,38 @@ func NewRedisCacheRepository(client *redis.Client) *RedisCacheRepository {
 }
 
 func (r RedisCacheRepository) Set(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	jsonValue, err := json.Marshal(value)
+	log.Printf("DEBUG - Attempting to save: Key=%s", key) // tambahkan ini
+
+	jsonData, err := json.Marshal(value)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal cache value: %v", err)
 	}
 
-	return r.client.Set(ctx, key, string(jsonValue), expiration).Err()
+	// Simpan ke Redis
+	err = r.client.Set(ctx, key, jsonData, expiration).Err()
+	if err != nil {
+		log.Printf("DEBUG - Error saving to Redis: %v", err) // tambahkan ini
+		return fmt.Errorf("failed to set cache: %v", err)
+	}
+
+	// Verifikasi langsung
+	savedValue, err := r.client.Get(ctx, key).Result()
+	log.Printf("DEBUG - Immediate verification: Key=%s, Value=%s, Error=%v", key, savedValue, err) // tambahkan ini
+
+	return nil
 }
 
 func (r RedisCacheRepository) Get(ctx context.Context, key string) (string, error) {
-	return r.client.Get(ctx, key).Result()
+	val, err := r.client.Get(ctx, key).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return "", fmt.Errorf("cache miss for key %s", key)
+		}
+		return "", err
+	}
+
+	log.Printf("Cache hit. Key: %s, Value: %s", key, val)
+	return val, nil
 }
 
 func (r RedisCacheRepository) Delete(ctx context.Context, key string) error {

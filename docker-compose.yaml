@@ -1,0 +1,23 @@
+services:
+  mysql-db:
+    container_name: mysql-db
+    image: mysql:latest
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: 'krs-management'
+      MYSQL_USER: 'korie'
+      MYSQL_PASSWORD: 'korie123'
+      MYSQL_ROOT_PASSWORD: 'korie123'
+    volumes:
+      - mysql-db:/var/lib/mysql
+
+  redis-db:
+    container_name: redis-db
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    command: ["redis-server"] # Menjalankan Redis tanpa password
+
+volumes:
+  mysql-db:
