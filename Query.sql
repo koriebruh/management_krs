@@ -1,6 +1,6 @@
 use krs_management;
 show tables ;
 
-select * from users;
+select * from mahasiswa_dinus;
 
 show databases ;

@@ -10,9 +10,9 @@ import (
 )
 
 type UserRepository interface {
-	Register(ctx context.Context, db *gorm.DB, user domain.User) error
-	Login(ctx context.Context, db *gorm.DB, user domain.User) (*string, error)
-	FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.User, error)
+	Register(ctx context.Context, db *gorm.DB, user domain.MahasiswaDinus) error
+	Login(ctx context.Context, db *gorm.DB, user domain.MahasiswaDinus) (*string, error)
+	FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.MahasiswaDinus, error)
 }
 
 type UserRepositoryImpl struct {
@@ -22,20 +22,20 @@ func NewUserRepository() *UserRepositoryImpl {
 	return &UserRepositoryImpl{}
 }
 
-func (r UserRepositoryImpl) Register(ctx context.Context, db *gorm.DB, user domain.User) error {
-	var existingUser *domain.User
+func (r UserRepositoryImpl) Register(ctx context.Context, db *gorm.DB, user domain.MahasiswaDinus) error {
+	var existingUser *domain.MahasiswaDinus
 
 	err := db.WithContext(ctx).
-		Where("email = ? OR username = ?", user.Email, user.Username).
-		Select("email, username"). // Select specific fields only
+		Where("nim_dinus = ?", user.NimDinus).
+		Select("nim_dinus"). // Select specific fields only
 		First(&existingUser).
 		Error
 
 	if err == nil {
-		if existingUser.Email == user.Email {
-			return fmt.Errorf("email already registered")
+		if existingUser.NimDinus == user.NimDinus {
+			return fmt.Errorf("NimDinus Already Registered")
 		}
-		return fmt.Errorf("username already taken")
+		return fmt.Errorf("NimDinus Taken")
 	}
 
 	if err != gorm.ErrRecordNotFound {
@@ -43,46 +43,46 @@ func (r UserRepositoryImpl) Register(ctx context.Context, db *gorm.DB, user doma
 	}
 
 	if err := db.WithContext(ctx).Create(&user).Error; err != nil {
-		return fmt.Errorf("error create account %v", err)
+		return fmt.Errorf("error Create New Mahasiswa %v", err)
 	}
 
 	return nil
 }
 
-func (r UserRepositoryImpl) Login(ctx context.Context, db *gorm.DB, user domain.User) (*string, error) {
+func (r UserRepositoryImpl) Login(ctx context.Context, db *gorm.DB, user domain.MahasiswaDinus) (*string, error) {
 
 	// temp data from db
-	var result *domain.User
+	var result *domain.MahasiswaDinus
 
 	err := db.WithContext(ctx).
-		Where("nim = ?", user.NIM).
+		Where("nim_dinus = ?", user.NimDinus).
 		First(&result).
 		Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("login failed: incorrect user and password")
+			return nil, fmt.Errorf("login failed: Incorrect NimDinus and Password")
 		}
 		return nil, fmt.Errorf("login failed: %v", err)
 	}
 
 	// validation pass
-	if errPass := bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(user.Password)); errPass != nil {
+	if errPass := bcrypt.CompareHashAndPassword([]byte(result.PassMhs), []byte(user.PassMhs)); errPass != nil {
 		return nil, fmt.Errorf("login failed decrypt : %v", errPass)
 	}
 
-	return &result.NIM, nil
+	return &result.NimDinus, nil
 
 }
 
-func (r UserRepositoryImpl) FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.User, error) {
-	var result *domain.User
+func (r UserRepositoryImpl) FindByNIM(ctx context.Context, db *gorm.DB, NIM string) (*domain.MahasiswaDinus, error) {
+	var result *domain.MahasiswaDinus
 
-	if err := db.WithContext(ctx).Where("nim = ?", NIM).First(&result).Error; err != nil {
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", NIM).First(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("product not found")
+			return nil, fmt.Errorf("NimDinus User Not found")
 		}
-		return nil, fmt.Errorf("failed to fetch product: %v", err)
+		return nil, fmt.Errorf(" Fail to get detail Current User %v", err)
 	}
 
 	return result, nil

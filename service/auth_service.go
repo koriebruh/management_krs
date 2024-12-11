@@ -38,19 +38,21 @@ func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq
 	}
 
 	return service.DB.Transaction(func(tx *gorm.DB) error {
-		var registerData domain.User
+		var registerData domain.MahasiswaDinus
 
-		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		password, err := bcrypt.GenerateFromPassword([]byte(req.PassMhs), bcrypt.DefaultCost)
 		if err != nil {
 			return fmt.Errorf("%w: %v", helper.ErrPasswordEncryption, err)
 		}
-		req.Password = string(password)
+		req.PassMhs = string(password)
 
-		registerData = domain.User{
-			NIM:      req.NIM,
-			Username: req.Username,
-			Password: req.Password,
-			Email:    req.Email,
+		registerData = domain.MahasiswaDinus{
+			NimDinus: req.NimDinus,
+			TAMasuk:  req.TAMasuk,
+			Prodi:    req.Prodi,
+			PassMhs:  req.PassMhs,
+			Kelas:    req.Kelas,
+			AkdmStat: req.AkdmStat,
 		}
 
 		if err = service.UserRepository.Register(ctx, tx, registerData); err != nil {
@@ -69,9 +71,9 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 	}
 
 	err := service.DB.Transaction(func(tx *gorm.DB) error {
-		loginData := domain.User{
-			NIM:      req.NIM,
-			Password: req.Password,
+		loginData := domain.MahasiswaDinus{
+			NimDinus: req.NimDinus,
+			PassMhs:  req.PassMhs,
 		}
 
 		result, err := service.UserRepository.Login(ctx, tx, loginData)
@@ -91,7 +93,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 }
 
 func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.CurrentUser, error) {
-	cacheKey := fmt.Sprintf("user:%s", nim)
+	cacheKey := fmt.Sprintf("NimDinus := %s", nim)
 
 	// Try get from cache
 	cacheUser, err := service.CacheRepository.Get(ctx, cacheKey)
@@ -116,12 +118,12 @@ func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.
 		}
 
 		result = dto.CurrentUser{
-			NIM:      user.NIM,
-			Username: user.Username,
-			Email:    user.Email,
+			NimDinus: user.NimDinus,
+			TAMasuk:  user.TAMasuk,
+			Prodi:    user.Prodi,
 		}
 
-		cacheErr := service.CacheRepository.Set(ctx, fmt.Sprint("user:"+nim), result, 15*time.Minute) // SAVE IN 1 HOUR
+		cacheErr := service.CacheRepository.Set(ctx, fmt.Sprint("user:"+nim), result, 15*time.Minute) // SAVE IN 15 HOUR
 		if cacheErr != nil {
 			// LOGGING ERROR CACHE
 			log.Printf("Failed to cache user: %v", cacheErr)

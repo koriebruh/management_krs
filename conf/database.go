@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"koriebruh/try/domain"
+	"log"
 	"log/slog"
 )
 
@@ -25,13 +26,14 @@ func InitDB() *gorm.DB {
 	})
 
 	if err != nil {
-		slog.Error("failed make connection to database", err)
+		log.Fatalf("failed make connection to database %v", err)
 	}
 
 	if err = db.AutoMigrate(
-		&domain.User{},
+		&domain.MahasiswaDinus{},
+		&domain.TahunAjaran{},
 	); err != nil {
-		slog.Error("failed auto migrate ", err)
+		log.Fatalf("failed to migrate in data base %v", err)
 	}
 
 	slog.Info("success migrate")

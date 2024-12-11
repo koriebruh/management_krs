@@ -1,7 +1,7 @@
 package dto
 
 type CurrentUser struct {
-	NIM      string `json:"nim" validate:"required"`
-	Username string `json:"username" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
+	NimDinus string `json:"nim_dinus"`
+	TAMasuk  int    `json:"ta_masuk"`
+	Prodi    string `json:"prodi"`
 }

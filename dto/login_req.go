@@ -1,6 +1,6 @@
 package dto
 
 type LoginReq struct {
-	NIM      string `json:"nim" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	NimDinus string `json:"nim_dinus" validate:"required"`
+	PassMhs  string `json:"pass_mhs" validate:"required"`
 }

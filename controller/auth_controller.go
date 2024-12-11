@@ -38,8 +38,10 @@ func (controller AuthControllerImpl) Register(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusCreated).JSON(dto.WebResponse{
 		Code:   http.StatusCreated,
-		Status: "User Registered Successfully",
-		Data:   nil,
+		Status: "STATUS CREATED",
+		Data: map[string]interface{}{
+			"message": "Registered New Mhs Successfully",
+		},
 	})
 }
 
@@ -57,27 +59,26 @@ func (controller AuthControllerImpl) Login(ctx *fiber.Ctx) error {
 	//SETTING GENERATE JWT
 	expTime := time.Now().Add(time.Minute * 3) // << KADALUARSA DALAM 3 minute
 	claims := conf.JWTClaim{
-		NIM: nimUser,
+		NimDinus: nimUser,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Issuer:    "koriebruh",
+			Issuer:    "koriebruh.akaJamal",
 			ExpiresAt: jwt.NewNumericDate(expTime),
 		},
 	}
 	tokenAlgo := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenValue, err := tokenAlgo.SignedString([]byte(conf.JWT_KEY))
 
-	return ctx.Status(http.StatusCreated).JSON(dto.WebResponse{
-		Code:   http.StatusCreated,
-		Status: "User Registered Successfully",
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
 		Data: map[string]string{
-			"message": "Login Success",
-			"token":   tokenValue,
+			"token": tokenValue,
 		},
 	})
 }
 
 func (controller AuthControllerImpl) CurrentAcc(ctx *fiber.Ctx) error {
-	nim := ctx.Locals("userNIM").(string)
+	nim := ctx.Locals("nim_dinus").(string)
 
 	acc, err := controller.AuthService.CurrentAcc(ctx.Context(), nim)
 	if err != nil {

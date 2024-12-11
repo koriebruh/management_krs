@@ -29,7 +29,7 @@ func JWTAuthMiddleware(c *fiber.Ctx) error {
 	}
 
 	// Set claims di context untuk digunakan di handler selanjutnya
-	c.Locals("userNIM", claims.NIM)
+	c.Locals("nim_dinus", claims.NimDinus)
 	c.Locals("claims", claims)
 
 	return c.Next()
@@ -73,7 +73,7 @@ func validateTokenClaims(claims *JWTClaim) error {
 	}
 
 	// Validasi issuer (opsional)
-	if claims.Issuer != "koriebruh" {
+	if claims.Issuer != "koriebruh.akaJamal" {
 		return errors.New("invalid token issuer")
 	}
 
