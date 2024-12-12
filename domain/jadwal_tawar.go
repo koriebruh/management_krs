@@ -16,9 +16,9 @@ type JadwalTawar struct {
 	IDSesi1         uint16          `gorm:"size:3;not null"`
 	IDSesi2         uint16          `gorm:"size:3;not null"`
 	IDSesi3         uint16          `gorm:"size:3;not null"`
-	IDRuang1        uint            `gorm:"size:3;not null"`
-	IDRuang2        uint            `gorm:"size:3;not null"`
-	IDRuang3        uint            `gorm:"size:3;not null"`
+	IDRuang1        uint16          `gorm:"size:3;not null"`
+	IDRuang2        uint16          `gorm:"size:3;not null"`
+	IDRuang3        uint16          `gorm:"size:3;not null"`
 	JnsJam          uint8           `gorm:"not null;comment:1=pagi, 2=malam, 3=pagi-malam"`
 	OpenClass       uint8           `gorm:"not null;default:1;comment:kelas dibuka utk KRS : 1 = open; 0 = close"`
 	Hari1           Hari            `gorm:"foreignKey:IDHari1"`

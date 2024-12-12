@@ -30,43 +30,37 @@ func InitDB() *gorm.DB {
 	}
 
 	//17 table
-	if err = db.AutoMigrate(
-		//&domain.Hari{},
-		//&domain.SesiKuliah{},        // rancu
-		//&domain.SesiKuliahBentrok{}, // rancu
-		//&domain.Ruang{},
-		//&domain.TahunAjaran{},
-		//&domain.MahasiswaDinus{},
-		//&domain.MatkulKurikulum{},
-		//&domain.JadwalTawar{},
-		//&domain.TagihanMhs{},
-		//&domain.IPSemester{},
-		//&domain.KRSRecord{},
-		//&domain.KRSRecordLog{},
-		//&domain.MhsIjinKRS{},
-		//&domain.HerregistMahasiswa{},
-		//&domain.MhsDipaketkan{},
-		//&domain.DaftarNilai{},
-		//&domain.ValidasiKRSMhs{},
+	// Wrap migrasi tabel dalam transaksi
+	err = db.Transaction(func(tx *gorm.DB) error {
+		// Jalankan migrasi tabel dalam transaksi
+		if err := tx.AutoMigrate(
+			&domain.Hari{},
+			&domain.SesiKuliah{},
+			&domain.SesiKuliahBentrok{},
+			&domain.Ruang{},
+			&domain.TahunAjaran{},
+			&domain.KRSRecord{},       // Migrasi tabel krs_record terlebih dahulu
+			&domain.MatkulKurikulum{}, // Migrasi tabel matkul_kurikulum setelah krs_record
+			&domain.JadwalTawar{},
+			&domain.TagihanMhs{},
+			&domain.IPSemester{},
+			&domain.MahasiswaDinus{},
+			&domain.KRSRecordLog{},
+			&domain.MhsIjinKRS{},
+			&domain.HerregistMahasiswa{},
+			&domain.MhsDipaketkan{},
+			&domain.DaftarNilai{},
+			&domain.ValidasiKRSMhs{},
+		); err != nil {
+			// Jika terjadi error saat migrasi, kembalikan error untuk membatalkan transaksi
+			return err
+		}
 
-		&domain.Hari{},
-		&domain.SesiKuliah{},
-		&domain.SesiKuliahBentrok{},
-		&domain.Ruang{},
-		&domain.TahunAjaran{},
-		&domain.KRSRecord{},       // Migrasi tabel krs_record terlebih dahulu
-		&domain.MatkulKurikulum{}, // Migrasi tabel matkul_kurikulum setelah krs_record
-		&domain.JadwalTawar{},
-		&domain.TagihanMhs{},
-		&domain.IPSemester{},
-		&domain.MahasiswaDinus{},
-		&domain.KRSRecordLog{},
-		&domain.MhsIjinKRS{},
-		&domain.HerregistMahasiswa{},
-		&domain.MhsDipaketkan{},
-		&domain.DaftarNilai{},
-		&domain.ValidasiKRSMhs{},
-	); err != nil {
+		// Jika tidak ada error, transaksi akan di-commit secara otomatis
+		return nil
+	})
+
+	if err != nil {
 		log.Fatalf("failed to migrate in data base %v", err)
 	}
 

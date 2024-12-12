@@ -3,7 +3,7 @@ package domain
 import "time"
 
 type SesiKuliah struct {
-	ID         uint16 `gorm:"primaryKey;autoIncrement"`
+	ID         uint8  `gorm:"primaryKey;autoIncrement"`
 	Jam        string `gorm:"size:11;not null;default:''"`
 	SKS        uint8  `gorm:"not null;default:0"`
 	JamMulai   *time.Time

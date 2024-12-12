@@ -1,7 +1,7 @@
 package domain
 
 type Ruang struct {
-	ID           uint    `gorm:"primaryKey;autoIncrement"`
+	ID           uint8   `gorm:"primaryKey;autoIncrement"`
 	Nama         string  `gorm:"size:250;not null"`
 	Nama2        string  `gorm:"size:250;default:'-'"`
 	IDJenisMakul *uint   `gorm:"size:11"`

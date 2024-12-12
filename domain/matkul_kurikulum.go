@@ -1,7 +1,7 @@
 package domain
 
 type MatkulKurikulum struct {
-	KurID         *uint   `gorm:"size:11"`
+	KurID         uint    `gorm:"size:11"`
 	Kdmk          string  `gorm:"primaryKey;size:255"`
 	Nmmk          *string `gorm:"size:255"`
 	Nmen          *string `gorm:"size:255"`
