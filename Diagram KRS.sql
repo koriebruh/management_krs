@@ -1,3 +1,8 @@
+create database krs_management;
+USE krs_management;
+drop database krs_management;
+drop table mahasiswa_dinus;
+
 CREATE TABLE `tagihan_mhs` (
   `id` int(50) PRIMARY KEY NOT NULL AUTO_INCREMENT COMMENT 'id biasa',
   `ta` int(10) NOT NULL COMMENT 'tahun ajaran',

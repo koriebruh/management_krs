@@ -29,9 +29,43 @@ func InitDB() *gorm.DB {
 		log.Fatalf("failed make connection to database %v", err)
 	}
 
+	//17 table
 	if err = db.AutoMigrate(
-		&domain.MahasiswaDinus{},
+		//&domain.Hari{},
+		//&domain.SesiKuliah{},        // rancu
+		//&domain.SesiKuliahBentrok{}, // rancu
+		//&domain.Ruang{},
+		//&domain.TahunAjaran{},
+		//&domain.MahasiswaDinus{},
+		//&domain.MatkulKurikulum{},
+		//&domain.JadwalTawar{},
+		//&domain.TagihanMhs{},
+		//&domain.IPSemester{},
+		//&domain.KRSRecord{},
+		//&domain.KRSRecordLog{},
+		//&domain.MhsIjinKRS{},
+		//&domain.HerregistMahasiswa{},
+		//&domain.MhsDipaketkan{},
+		//&domain.DaftarNilai{},
+		//&domain.ValidasiKRSMhs{},
+
+		&domain.Hari{},
+		&domain.SesiKuliah{},
+		&domain.SesiKuliahBentrok{},
+		&domain.Ruang{},
 		&domain.TahunAjaran{},
+		&domain.KRSRecord{},       // Migrasi tabel krs_record terlebih dahulu
+		&domain.MatkulKurikulum{}, // Migrasi tabel matkul_kurikulum setelah krs_record
+		&domain.JadwalTawar{},
+		&domain.TagihanMhs{},
+		&domain.IPSemester{},
+		&domain.MahasiswaDinus{},
+		&domain.KRSRecordLog{},
+		&domain.MhsIjinKRS{},
+		&domain.HerregistMahasiswa{},
+		&domain.MhsDipaketkan{},
+		&domain.DaftarNilai{},
+		&domain.ValidasiKRSMhs{},
 	); err != nil {
 		log.Fatalf("failed to migrate in data base %v", err)
 	}
