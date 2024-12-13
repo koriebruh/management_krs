@@ -1,9 +1,9 @@
 package domain
 
 type MhsDipaketkan struct {
-	NimDinus       string `gorm:"primaryKey;size:50"`
-	TAMasukMhs     *int
-	MahasiswaDinus MahasiswaDinus `gorm:"foreignkey:NimDinus"`
+	NimDinus   string `gorm:"primaryKey"`
+	TaMasukMhs int
+	Mahasiswa  MahasiswaDinus `gorm:"foreignKey:NimDinus;references:NimDinus"`
 }
 
 func (m *MhsDipaketkan) TableName() string {

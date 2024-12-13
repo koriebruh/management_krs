@@ -1,21 +1,21 @@
 package domain
 
 type MatkulKurikulum struct {
-	KurID         uint    `gorm:"size:11"`
-	Kdmk          string  `gorm:"primaryKey;size:255"`
-	Nmmk          *string `gorm:"size:255"`
-	Nmen          *string `gorm:"size:255"`
-	TP            *string `gorm:"type:enum('T', 'P', 'TP')"`
-	SKS           *int    `gorm:"size:7"`
-	SKST          *int16  `gorm:"size:3"`
-	SKSP          *int16  `gorm:"size:3"`
-	Smt           *uint
-	JnsSmt        *int8
-	Aktif         *int8
-	KurNama       *string `gorm:"size:255"`
-	KelompokMakul *string `gorm:"type:enum('MPK', 'MKK', 'MKB', 'MKD', 'MBB', 'MPB')"`
-	KurAktif      *bool
-	JenisMatkul   *string `gorm:"type:enum('wajib', 'pilihan')"`
+	KurID         int    `gorm:"column:kur_id"`
+	Kdmk          string `gorm:"unique;not null;unique"`
+	Nmmk          string
+	Nmen          string
+	Tp            string `gorm:"type:enum('T','P','TP')"`
+	Sks           int
+	SksT          int16
+	SksP          int16
+	Smt           int
+	JnsSmt        int
+	Aktif         bool
+	KurNama       string
+	KelompokMakul string `gorm:"type:enum('MPK','MKK','MKB','MKD','MBB','MPB')"`
+	KurAktif      bool   `gorm:"type:bit(1)"`
+	JenisMatkul   string `gorm:"type:enum('wajib','pilihan')"`
 }
 
 func (m *MatkulKurikulum) TableName() string {

@@ -48,9 +48,9 @@ func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq
 
 		registerData = domain.MahasiswaDinus{
 			NimDinus: req.NimDinus,
-			TaMasuk:  &req.TAMasuk,
-			Prodi:    &req.Prodi,
-			PassMhs:  &req.PassMhs,
+			TaMasuk:  req.TAMasuk,
+			Prodi:    req.Prodi,
+			PassMhs:  req.PassMhs,
 			Kelas:    req.Kelas,
 			AkdmStat: req.AkdmStat,
 		}
@@ -73,7 +73,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 	err := service.DB.Transaction(func(tx *gorm.DB) error {
 		loginData := domain.MahasiswaDinus{
 			NimDinus: req.NimDinus,
-			PassMhs:  &req.PassMhs,
+			PassMhs:  req.PassMhs,
 		}
 
 		result, err := service.UserRepository.Login(ctx, tx, loginData)
@@ -119,8 +119,8 @@ func (service AuthServiceImpl) CurrentAcc(ctx context.Context, nim string) (dto.
 
 		result = dto.CurrentUser{
 			NimDinus: user.NimDinus,
-			TAMasuk:  *user.TaMasuk,
-			Prodi:    *user.Prodi,
+			TAMasuk:  user.TaMasuk,
+			Prodi:    user.Prodi,
 		}
 
 		cacheErr := service.CacheRepository.Set(ctx, fmt.Sprint("user:"+nim), result, 15*time.Minute) // SAVE IN 15 HOUR

@@ -1,9 +1,9 @@
 package domain
 
 type Hari struct {
-	ID     uint8  `gorm:"primaryKey"`
-	Nama   string `gorm:"size:6;not null"`
-	NamaEn string `gorm:"size:20;not null"`
+	ID     int8   `gorm:"unique;not null"`
+	Nama   string `gorm:"type:varchar(6);not null"`
+	NamaEn string `gorm:"type:varchar(20);not null"`
 }
 
 func (h *Hari) TableName() string {

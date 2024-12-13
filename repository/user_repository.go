@@ -67,7 +67,7 @@ func (r UserRepositoryImpl) Login(ctx context.Context, db *gorm.DB, user domain.
 	}
 
 	// validation pass
-	if errPass := bcrypt.CompareHashAndPassword([]byte(*result.PassMhs), []byte(*user.PassMhs)); errPass != nil {
+	if errPass := bcrypt.CompareHashAndPassword([]byte(result.PassMhs), []byte(user.PassMhs)); errPass != nil {
 		return nil, fmt.Errorf("login failed decrypt : %v", errPass)
 	}
 

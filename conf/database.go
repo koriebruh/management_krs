@@ -5,12 +5,12 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"koriebruh/try/domain"
 	"log"
 	"log/slog"
 )
 
 func InitDB() *gorm.DB {
-
 	config := GetConfig()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		config.DataBase.User,
@@ -28,62 +28,56 @@ func InitDB() *gorm.DB {
 		log.Fatalf("failed make connection to database %v", err)
 	}
 
-	//err = db.Transaction(func(tx *gorm.DB) error {
-	//	// Migrasi tabel yang tidak memiliki dependensi foreign key
-	//	if err := tx.Debug().AutoMigrate(
-	//		&domain.Hari{},              // Hari
-	//		&domain.SesiKuliah{},        // SesiKuliah
-	//		&domain.SesiKuliahBentrok{}, // SesiKuliahBentrok
-	//		&domain.Ruang{},             // Ruang
-	//		&domain.TahunAjaran{},       // TahunAjaran
-	//	); err != nil {
-	//		return err
-	//	}
-	//
-	//	// Migrasi tabel yang memiliki dependensi foreign key
-	//	if err := tx.Debug().AutoMigrate(
-	//		&domain.KRSRecord{},       // KRSRecord
-	//		&domain.MatkulKurikulum{}, // MatkulKurikulum
-	//		&domain.JadwalTawar{},     // JadwalTawar
-	//		&domain.TagihanMhs{},      // TagihanMhs
-	//		&domain.IPSemester{},      // IPSemester
-	//	); err != nil {
-	//		return err
-	//	}
-	//
-	//	// Migrasi tabel MhsIjinKRS sebelum MahasiswaDinus
-	//	if err := tx.Debug().AutoMigrate(
-	//		&domain.MhsIjinKRS{}, // MhsIjinKRS
-	//	); err != nil {
-	//		return err
-	//	}
-	//
-	//	// Migrasi tabel MahasiswaDinus yang tergantung pada tabel sebelumnya
-	//	if err := tx.Debug().AutoMigrate(
-	//		&domain.MahasiswaDinus{}, // MahasiswaDinus
-	//	); err != nil {
-	//		return err
-	//	}
-	//
-	//	// Migrasi tabel lainnya dengan dependensi yang sudah terpenuhi
-	//	if err := tx.Debug().AutoMigrate(
-	//		&domain.KRSRecordLog{},       // KRSRecordLog
-	//		&domain.MhsDipaketkan{},      // MhsDipaketkan
-	//		&domain.HerregistMahasiswa{}, // HerregistMahasiswa
-	//		&domain.DaftarNilai{},        // DaftarNilai
-	//		&domain.ValidasiKRSMhs{},     // ValidasiKRSMhs
-	//	); err != nil {
-	//		return err
-	//	}
-	//
-	//	// Semua migrasi berhasil
-	//	return nil
-	//})
+	// Disable foreign key checks before migration
+	db.Exec("SET FOREIGN_KEY_CHECKS = 0")
+
+	err = db.Transaction(func(tx *gorm.DB) error {
+		// Independent tables (no foreign key dependencies)
+		if err := tx.AutoMigrate(
+			&domain.MahasiswaDinus{},
+			&domain.MatkulKurikulum{},
+			&domain.Hari{},
+			&domain.SesiKuliah{},
+			&domain.Ruang{},
+			&domain.TahunAjaran{},
+		); err != nil {
+			return err
+		}
+
+		// Tables with single-level dependencies
+		if err := tx.AutoMigrate(
+			&domain.TagihanMhs{},
+			&domain.IpSemester{},
+			&domain.JadwalInputKrs{},
+			&domain.MhsIjinKrs{},
+			&domain.HerregistMahasiswa{},
+			&domain.MhsDipaketkan{},
+			&domain.DaftarNilai{},
+			&domain.ValidasiKrsMhs{},
+			&domain.SesiKuliahBentrok{},
+		); err != nil {
+			return err
+		}
+
+		// Tables with multiple dependencies
+		if err := tx.AutoMigrate(
+			&domain.JadwalTawar{},
+			&domain.KrsRecord{},
+			&domain.KrsRecordLog{},
+		); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	// Re-enable foreign key checks after migration
+	db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 
 	if err != nil {
-		log.Fatalf("failed to migrate in data base %v", err)
+		log.Fatalf("failed to migrate in database: %v", err)
 	}
 
-	slog.Info("connection establish")
+	slog.Info("connection established")
 	return db
 }

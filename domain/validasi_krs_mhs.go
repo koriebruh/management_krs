@@ -2,17 +2,17 @@ package domain
 
 import "time"
 
-type ValidasiKRSMhs struct {
-	ID             uint   `gorm:"primaryKey;autoIncrement"`
-	NimDinus       string `gorm:"size:50;not null"`
-	JobDate        *time.Time
-	JobHost        *string `gorm:"size:255"`
-	JobAgent       *string `gorm:"size:255"`
-	TA             *int
-	MahasiswaDinus MahasiswaDinus `gorm:"foreignkey:NimDinus"`
-	TahunAjaran    TahunAjaran    `gorm:"foreignkey:TA"`
+type ValidasiKrsMhs struct {
+	ID          int            `gorm:"primaryKey;autoIncrement"`
+	NimDinus    string         `gorm:"not null"`
+	JobDate     time.Time      `gorm:"default:null"`
+	JobHost     string         `gorm:"default:null"`
+	JobAgent    string         `gorm:"default:null"`
+	TA          int            `gorm:"not null;default:0"`
+	Mahasiswa   MahasiswaDinus `gorm:"foreignKey:NimDinus;references:NimDinus"`
+	TahunAjaran TahunAjaran    `gorm:"foreignKey:TA;references:Kode"`
 }
 
-func (v *ValidasiKRSMhs) TableName() string {
+func (v *ValidasiKrsMhs) TableName() string {
 	return "validasi_krs_mhs"
 }

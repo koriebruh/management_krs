@@ -2,19 +2,19 @@ package domain
 
 import "time"
 
-type KRSRecordLog struct {
-	IDKRS           *uint
-	NimDinus        *string `gorm:"size:50"`
-	Kdmk            *string `gorm:"size:255"`
-	Aksi            *int8   `gorm:"comment:1=insert,2=delete"`
-	IDJadwal        *uint
-	IPAddr          *string          `gorm:"size:50"`
-	LastUpdate      time.Time        `gorm:"autoCreateTime"`
-	KRSRecord       *KRSRecord       `gorm:"foreignkey:IDKRS"`
-	MahasiswaDinus  *MahasiswaDinus  `gorm:"foreignkey:NimDinus"`
-	MatkulKurikulum *MatkulKurikulum `gorm:"foreignkey:Kdmk"`
+type KrsRecordLog struct {
+	IDKrs      int             `gorm:"default:null"`
+	NimDinus   string          `gorm:"default:null"`
+	Kdmk       string          `gorm:"default:null"`
+	Aksi       int8            `gorm:"default:null;comment:1=insert,2=delete"`
+	IDJadwal   int             `gorm:"default:null"`
+	IpAddr     string          `gorm:"default:null"`
+	LastUpdate time.Time       `gorm:"not null"`
+	KrsRecord  KrsRecord       `gorm:"foreignKey:IDKrs;references:ID"`
+	Mahasiswa  MahasiswaDinus  `gorm:"foreignKey:NimDinus;references:NimDinus"`
+	MataKuliah MatkulKurikulum `gorm:"foreignKey:Kdmk;references:Kdmk"`
 }
 
-func (k *KRSRecordLog) TableName() string {
+func (k *KrsRecordLog) TableName() string {
 	return "krs_record_log"
 }
