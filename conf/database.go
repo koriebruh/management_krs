@@ -5,7 +5,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"koriebruh/try/domain"
 	"log"
 	"log/slog"
 )
@@ -29,41 +28,62 @@ func InitDB() *gorm.DB {
 		log.Fatalf("failed make connection to database %v", err)
 	}
 
-	//17 table
-	// Wrap migrasi tabel dalam transaksi
-	err = db.Transaction(func(tx *gorm.DB) error {
-		// Jalankan migrasi tabel dalam transaksi
-		if err := tx.AutoMigrate(
-			&domain.Hari{},
-			&domain.SesiKuliah{},
-			&domain.SesiKuliahBentrok{},
-			&domain.Ruang{},
-			&domain.TahunAjaran{},
-			&domain.KRSRecord{},       // Migrasi tabel krs_record terlebih dahulu
-			&domain.MatkulKurikulum{}, // Migrasi tabel matkul_kurikulum setelah krs_record
-			&domain.JadwalTawar{},
-			&domain.TagihanMhs{},
-			&domain.IPSemester{},
-			&domain.MahasiswaDinus{},
-			&domain.KRSRecordLog{},
-			&domain.MhsIjinKRS{},
-			&domain.HerregistMahasiswa{},
-			&domain.MhsDipaketkan{},
-			&domain.DaftarNilai{},
-			&domain.ValidasiKRSMhs{},
-		); err != nil {
-			// Jika terjadi error saat migrasi, kembalikan error untuk membatalkan transaksi
-			return err
-		}
-
-		// Jika tidak ada error, transaksi akan di-commit secara otomatis
-		return nil
-	})
+	//err = db.Transaction(func(tx *gorm.DB) error {
+	//	// Migrasi tabel yang tidak memiliki dependensi foreign key
+	//	if err := tx.Debug().AutoMigrate(
+	//		&domain.Hari{},              // Hari
+	//		&domain.SesiKuliah{},        // SesiKuliah
+	//		&domain.SesiKuliahBentrok{}, // SesiKuliahBentrok
+	//		&domain.Ruang{},             // Ruang
+	//		&domain.TahunAjaran{},       // TahunAjaran
+	//	); err != nil {
+	//		return err
+	//	}
+	//
+	//	// Migrasi tabel yang memiliki dependensi foreign key
+	//	if err := tx.Debug().AutoMigrate(
+	//		&domain.KRSRecord{},       // KRSRecord
+	//		&domain.MatkulKurikulum{}, // MatkulKurikulum
+	//		&domain.JadwalTawar{},     // JadwalTawar
+	//		&domain.TagihanMhs{},      // TagihanMhs
+	//		&domain.IPSemester{},      // IPSemester
+	//	); err != nil {
+	//		return err
+	//	}
+	//
+	//	// Migrasi tabel MhsIjinKRS sebelum MahasiswaDinus
+	//	if err := tx.Debug().AutoMigrate(
+	//		&domain.MhsIjinKRS{}, // MhsIjinKRS
+	//	); err != nil {
+	//		return err
+	//	}
+	//
+	//	// Migrasi tabel MahasiswaDinus yang tergantung pada tabel sebelumnya
+	//	if err := tx.Debug().AutoMigrate(
+	//		&domain.MahasiswaDinus{}, // MahasiswaDinus
+	//	); err != nil {
+	//		return err
+	//	}
+	//
+	//	// Migrasi tabel lainnya dengan dependensi yang sudah terpenuhi
+	//	if err := tx.Debug().AutoMigrate(
+	//		&domain.KRSRecordLog{},       // KRSRecordLog
+	//		&domain.MhsDipaketkan{},      // MhsDipaketkan
+	//		&domain.HerregistMahasiswa{}, // HerregistMahasiswa
+	//		&domain.DaftarNilai{},        // DaftarNilai
+	//		&domain.ValidasiKRSMhs{},     // ValidasiKRSMhs
+	//	); err != nil {
+	//		return err
+	//	}
+	//
+	//	// Semua migrasi berhasil
+	//	return nil
+	//})
 
 	if err != nil {
 		log.Fatalf("failed to migrate in data base %v", err)
 	}
 
-	slog.Info("success migrate")
+	slog.Info("connection establish")
 	return db
 }
