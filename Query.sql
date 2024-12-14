@@ -10,45 +10,22 @@ create database krs_management;
 use krs_management;
 show tables ;
 
+SELECT
+    TABLE_NAME,
+    COLUMN_NAME,
+    CONSTRAINT_NAME,
+    REFERENCED_TABLE_NAME,
+    REFERENCED_COLUMN_NAME
+FROM
+    INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE
+    REFERENCED_TABLE_NAME = 'matkul_kurikulum' AND
+    REFERENCED_COLUMN_NAME = 'kdmk';
+
+
+SHOW CREATE TABLE matkul_kurikulum;
+
 select * from matkul_kurikulum;
-# delete from mahasiswa_dinus;
-SELECT * FROM hari;
-desc sesi_kuliah;
-desc hari;
-select * from hari;
-desc matkul_kurikulum;
-
-
-SELECT CONSTRAINT_NAME
-FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE TABLE_NAME = 'matkul_kurikulum' AND COLUMN_NAME = 'kdmk';
-
-SELECT TABLE_NAME, CONSTRAINT_NAME
-FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-WHERE COLUMN_NAME = 'kdmk' AND TABLE_NAME = 'matkul_kurikulum';
-
-
-
-SHOW TABLES LIKE 'sesi_kuliah_bentroks';
-
-DESCRIBE sesi_kuliah;
-DESCRIBE jatwal_tawar;
-
-SHOW TABLES LIKE 'mhs_ijin_krs';
-
-
-desc tahun_ajaran;
-DROP TABLE IF EXISTS mahasiswa_dinus;
-
-
-desc mahasiswa_dinus;
-desc mhs_dipaketkan ;
-
-
-desc herregis_mahasiswa;
-desc mhs_ijin_krs ;
-
-SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE COLUMN_NAME = 'nim_dinus'
-  AND TABLE_SCHEMA = 'krs_management';
+select * from krs_record;
+select * from krs_record_log;
+select * from daftar_nilai;
