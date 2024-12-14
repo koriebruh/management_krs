@@ -2,7 +2,7 @@ package domain
 
 type MatkulKurikulum struct {
 	KurID         int    `gorm:"column:kur_id"`
-	Kdmk          string `gorm:"unique;not null;unique"`
+	Kdmk          string `gorm:"index;not null"`
 	Nmmk          string
 	Nmen          string
 	Tp            string `gorm:"type:enum('T','P','TP')"`
