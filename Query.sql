@@ -10,6 +10,23 @@ create database krs_management;
 use krs_management;
 show tables ;
 
+select * from matkul_kurikulum;
+# delete from mahasiswa_dinus;
+SELECT * FROM hari;
+desc sesi_kuliah;
+desc hari;
+select * from hari;
+desc matkul_kurikulum;
+
+
+SELECT CONSTRAINT_NAME
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE TABLE_NAME = 'matkul_kurikulum' AND COLUMN_NAME = 'kdmk';
+
+SELECT TABLE_NAME, CONSTRAINT_NAME
+FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+WHERE COLUMN_NAME = 'kdmk' AND TABLE_NAME = 'matkul_kurikulum';
+
 
 
 SHOW TABLES LIKE 'sesi_kuliah_bentroks';

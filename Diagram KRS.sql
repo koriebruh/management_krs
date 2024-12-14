@@ -332,3 +332,9 @@ ALTER TABLE `validasi_krs_mhs`
 
 ALTER TABLE `validasi_krs_mhs`
     ADD FOREIGN KEY (`ta`) REFERENCES `tahun_ajaran` (`kode`);
+
+
+#ADD BCS ERR
+ALTER TABLE matkul_kurikulum DROP INDEX kdmk;
+
+ALTER TABLE matkul_kurikulum ADD UNIQUE(kur_id, kdmk);
