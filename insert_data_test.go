@@ -126,7 +126,6 @@ func TestInsertMatkulkurikulum(t *testing.T) {
 	}
 }
 
-// gtw err input id 0 ga bisa bodomat tolol
 func TestInsertHari(t *testing.T) {
 	db := conf.InitDB()
 	hariData := []domain.Hari{
@@ -307,3 +306,471 @@ func TestInsertTahunAjaran(t *testing.T) {
 	&domain.ValidasiKrsMhs{},
 	&domain.SesiKuliahBentrok{},
 */
+
+// DUNGU DATA NIM DI TABEL TAGHAN AMA DI MAHASISWA DINUS BEDA MANA BISA FORIGEN KEY NYA,
+// (INI SUCCES DATA TERAHIR YG EMANG BEGO)
+func TestTagihanMhs(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/tagihan_mhs.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[2]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[2], i)
+			continue
+		}
+
+		sppBayarDate, err := time.Parse(layout, record[4])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		tagihanMhs := domain.TagihanMhs{
+			ID:            atoi(record[0]),
+			TA:            atoi(record[1]),
+			NimDinus:      record[2],
+			SppBayar:      atoi(record[3]),
+			SppBayarDate:  sppBayarDate,
+			SppHost:       record[5],
+			SppStatus:     atoi(record[6]),
+			SppDispensasi: atoi(record[7]),
+			SppBank:       record[8],
+			SppTransaksi:  record[9],
+		}
+
+		// Insert ke database
+		if err := db.Create(&tagihanMhs).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// SKIP SOME DATA NIM  and KODE YG TUDAK ADA JG
+// (WORK) AGA LAMA NANTI UBAH PAKE GO ROUTRINE
+func TestIpSemester(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/ip_semester.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		if atoi(record[1]) == 20231 && record[5] == "95cedfff35b96393991dd55e982120c2" {
+			fmt.Println("harus nya ke insert ini")
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
+			continue
+		}
+		log.Printf("NIM INI KETEMU %v", record[5])
+
+		var kodeExist domain.TahunAjaran
+		err = db.Where("kode = ?", record[1]).First(&kodeExist).Error
+		if err != nil {
+			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[1], i)
+			continue
+		}
+		log.Println()
+
+		lu, err := time.Parse(layout, record[4])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		ipSemester := domain.IpSemester{
+			ID:         atoi(record[0]),
+			TA:         atoi(record[1]),
+			Sks:        atoi(record[2]),
+			Ips:        record[3],
+			LastUpdate: lu,
+			NimDinus:   record[5],
+		}
+
+		// Insert ke database
+		if err := db.Create(&ipSemester).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// (AMAN)
+func TestJadwalInputKrs(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/jadwal_input_krs.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "02/01/06 15.04"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		tgsMulai, err := time.Parse(layout, record[3])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+		tgsSelesai, err := time.Parse(layout, record[4])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		jadwalInputKrs := domain.JadwalInputKrs{
+			ID:         atoi(record[0]),
+			TA:         atoi(record[1]),
+			Prodi:      record[2],
+			TglMulai:   tgsMulai,
+			TglSelesai: tgsSelesai,
+		}
+
+		// Insert ke database
+		if err := db.Create(&jadwalInputKrs).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// SKIP SOME DATA NIM YG TOLOL GA ADA
+// (AMAN)
+func TestMhsIjinKrs(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/mhs_ijin_krs.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[4]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[4], i)
+			continue
+		}
+
+		TimeIjin, err := time.Parse(layout, record[3])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		ijinKrs := domain.MhsIjinKrs{
+			ID:       atoi(record[0]),
+			TA:       atoi(record[1]),
+			Ijinkan:  record[2] == "1",
+			Time:     TimeIjin,
+			NimDinus: record[4],
+		}
+
+		// Insert ke database
+		if err := db.Create(&ijinKrs).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// (AMAN)
+func TestHerregistMhs(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/herregist_mahasiswa.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
+			continue
+		}
+
+		timeReg, err := time.Parse(layout, record[3])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		herregistMahasiswa := domain.HerregistMahasiswa{
+			ID:       atoi(record[0]),
+			NimDinus: record[1],
+			TA:       atoi(record[2]),
+			DateReg:  timeReg,
+		}
+
+		// Insert ke database
+		if err := db.Create(&herregistMahasiswa).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// WORK BUAT DATA EMANG ADA YG TOLOL JADI ADA YG GA MASUK
+func TestMahasiswaDiPaketkan(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/mhs_dipaketkan.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[0]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[0], i)
+			continue
+		}
+
+		dipaketkan := domain.MhsDipaketkan{
+			NimDinus:   record[0],
+			TaMasukMhs: atoi(record[1]),
+		}
+
+		// Insert ke database
+		if err := db.Create(&dipaketkan).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// WORK
+func TestDaftarNilai(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/daftar_nilai.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
+			continue
+		}
+
+		daftarNilai := domain.DaftarNilai{
+			ID:       atoi(record[0]),
+			NimDinus: record[1],
+			Kdmk:     record[2],
+			Nl:       record[3],
+			Hide:     int16(atoi(record[4])),
+		}
+
+		// Insert ke database
+		if err := db.Create(&daftarNilai).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// WORK
+func TestValidasiKrsMhs(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/validasi_krs_mhs.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
+			continue
+		}
+
+		var kodeExist domain.TahunAjaran
+		err = db.Where("kode = ?", record[5]).First(&kodeExist).Error
+		if err != nil {
+			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[5], i)
+			continue
+		}
+
+		JobDate, err := time.Parse(layout, record[2])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		validasiKrsMhs := domain.ValidasiKrsMhs{
+			ID:       atoi(record[0]),
+			NimDinus: record[1],
+			JobDate:  JobDate,
+			JobHost:  record[3],
+			JobAgent: record[4],
+			TA:       atoi(record[5]),
+		}
+
+		// Insert ke database
+		if err := db.Create(&validasiKrsMhs).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+// WORK
+func TestSesiKuliahBentrok(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/sesi_kuliah_bentrok.csv")
+	IfErrNotNil(err)
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		idSesiKuliah := atoi(record[0]) // Ambil id dari tabel sesi_kuliah
+		idBentrok := atoi(record[1])    // Ambil id_bentrok dari file CSV
+
+		var sesiKuliah domain.SesiKuliah
+		err := db.Where("id = ?", idSesiKuliah).First(&sesiKuliah).Error
+		if err != nil {
+			// Jika tidak ditemukan, lewati baris ini atau tangani error
+			log.Printf("Sesi kuliah dengan id %d tidak ditemukan, skipping line %d", idSesiKuliah, i)
+			continue
+		}
+
+		bentrok := domain.SesiKuliahBentrok{
+			ID:        idSesiKuliah,
+			IDBentrok: idBentrok,
+		}
+
+		// Insert ke database
+		if err := db.Create(&bentrok).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
+}
+
+/*
+	&domain.JadwalTawar{},
+	&domain.KrsRecord{},
+	&domain.KrsRecordLog{},
+*/
+
+func TestJadwalTawar(t *testing.T) {
+
+}
+
+func TestKrsRecord(t *testing.T) {
+
+}
+
+func TestKrsRecordLog(t *testing.T) {
+
+}

@@ -14,5 +14,5 @@ type HerregistMahasiswa struct {
 }
 
 func (h *HerregistMahasiswa) TableName() string {
-	return "herregis_mahasiswa"
+	return "herregist_mahasiswa"
 }
