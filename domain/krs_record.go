@@ -1,7 +1,7 @@
 package domain
 
 type KrsRecord struct {
-	ID          int             `gorm:"primaryKey;autoIncrement"`
+	ID          int             `gorm:"primaryKey;autoIncrement=false"`
 	TA          int             `gorm:"not null;default:0"`
 	Kdmk        string          `gorm:"not null"`
 	IDJadwal    int             `gorm:"not null"`

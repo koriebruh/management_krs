@@ -2,7 +2,7 @@ package domain
 
 // JadwalTawar represents the jadwal_tawar table
 type JadwalTawar struct {
-	ID         int             `gorm:"primaryKey;autoIncrement"`
+	ID         int             `gorm:"primaryKey;autoIncrement=false"`
 	TA         int             `gorm:"not null;default:0"`
 	Kdmk       string          `gorm:"not null"`
 	Klpk       string          `gorm:"not null"`
@@ -35,5 +35,5 @@ type JadwalTawar struct {
 }
 
 func (j *JadwalTawar) TableName() string {
-	return "jatwal_tawar"
+	return "jadwal_tawar"
 }

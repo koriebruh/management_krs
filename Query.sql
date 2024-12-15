@@ -59,5 +59,14 @@ select * from sesi_kuliah;
 select * from sesi_kuliah_bentrok;
 
 
-delete from sesi_kuliah_bentrok;
+select * from daftar_nilai WHERE nim_dinus ='94b3dd2e8a3217a50aa0e6694c93c154';
+
+
+select * from jadwal_tawar;
+desc jatwal_tawar;
+
+SELECT * FROM sesi_kuliah;
+
+
+# delete from sesi_kuliah_bentrok;
 SHOW TABLES ;
