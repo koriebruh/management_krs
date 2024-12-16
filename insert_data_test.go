@@ -940,6 +940,12 @@ func TestKrsRecord(t *testing.T) {
 			continue
 		}
 
+		var KrsIdExist domain.KrsRecord
+		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
+			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
+			continue
+		}
+
 		krsRecord := domain.KrsRecord{
 			ID:       atoi(record[0]),
 			TA:       atoi(record[1]), //cek aada tidak `
@@ -996,6 +1002,12 @@ func TestKrsRecordLog(t *testing.T) {
 		var idKrsExist domain.KrsRecord
 		if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
 			log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
+			continue
+		}
+
+		var KrsIdExist domain.KrsRecordLog
+		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
+			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
 			continue
 		}
 

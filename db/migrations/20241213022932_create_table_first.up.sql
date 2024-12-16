@@ -1,13 +1,8 @@
-drop database krs_management;
-create database krs_management;
-USE krs_management;
-show tables;
-
 CREATE TABLE `tagihan_mhs`
 (
     `id`             int(50) PRIMARY KEY NOT NULL AUTO_INCREMENT COMMENT 'id biasa',
     `ta`             int(10)             NOT NULL COMMENT 'tahun ajaran',
-    `nim_dinus`      varchar(50)         NOT NULL COMMENT 'nim mahasiswa',
+    `nim_dinus`      varchar(50) NOT NULL COMMENT 'nim mahasiswa',
     `spp_bank`       varchar(11),
     `spp_bayar`      int(1)              NOT NULL DEFAULT '0' COMMENT 'status bayar spp 1: bayar 0: belum bayar',
     `spp_bayar_date` datetime COMMENT 'tanggal pada saat operator input pembayaran',
@@ -20,18 +15,20 @@ CREATE TABLE `tagihan_mhs`
 CREATE TABLE `mahasiswa_dinus`
 (
     `id`        int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `nim_dinus` varchar(50)         NOT NULL DEFAULT '',
+    `nim_dinus` varchar(50) NOT NULL DEFAULT '',
     `ta_masuk`  int(10),
     `prodi`     varchar(5),
-    `pass_mhs`  varchar(128)                 DEFAULT null,
+    `pass_mhs`  varchar(128)         DEFAULT null,
     `kelas`     int(1)              NOT NULL COMMENT '0 = not choose,\r\n1 = pagi,\r\n2 = malam,\r\n3 = karyawan/pegawai',
-    `akdm_stat` char(2)             NOT NULL COMMENT '1 = aktif, 2 = cuti, 3 = keluar, 4 = lulus, 5 = mangkir, 6 = meninggal, 7 = DO, 8 = Aktif Keuangan'
+    `akdm_stat` char(2)     NOT NULL COMMENT '1 = aktif, 2 = cuti, 3 = keluar, 4 = lulus, 5 = mangkir, 6 = meninggal, 7 = DO, 8 = Aktif Keuangan'
 );
 
+#BODOAMAD
+TAMBAH ID BUAT RELASI DATA NYA TOLOL ASU
 CREATE TABLE `matkul_kurikulum`
 (
     `kur_id`         int(11),
-    `kdmk`           varchar(255) NOT NULL UNIQUE,
+    `kdmk`           varchar(255) NOT NULL,
     `nmmk`           varchar(255),
     `nmen`           varchar(255),
     `tp`             ENUM ('T', 'P', 'TP'),
@@ -44,12 +41,13 @@ CREATE TABLE `matkul_kurikulum`
     `kur_nama`       varchar(255),
     `kelompok_makul` ENUM ('MPK', 'MKK', 'MKB', 'MKD', 'MBB', 'MPB'),
     `kur_aktif`      bit(1),
-    `jenis_matkul`   ENUM ('wajib', 'pilihan')
+    `jenis_matkul`   ENUM ('wajib', 'pilihan'),
+    PRIMARY KEY (`kur_id`, `kdmk`) -- Gabungan PRIMARY KEY
 );
 
 CREATE TABLE `hari`
 (
-    `id`      tinyint(1)  NOT NULL UNIQUE ,
+    `id`      tinyint(1)  NOT NULL UNIQUE,
     `nama`    varchar(6)  NOT NULL,
     `nama_en` varchar(20) NOT NULL
 );
@@ -67,20 +65,20 @@ CREATE TABLE `ip_semester`
 (
     `id`          int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `ta`          int(10)             NOT NULL DEFAULT '0',
-    `nim_dinus`   varchar(50)         NOT NULL,
+    `nim_dinus`   varchar(50) NOT NULL,
     `sks`         int(4)              NOT NULL,
-    `ips`         varchar(5)          NOT NULL,
-    `last_update` datetime                     DEFAULT null
+    `ips`         varchar(5)  NOT NULL,
+    `last_update` datetime DEFAULT null
 );
 
 CREATE TABLE `sesi_kuliah`
 (
     `id`          int(5) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `jam`         varchar(11)             NOT NULL DEFAULT '',
-    `sks`         smallint(1)             NOT NULL DEFAULT '0',
-    `jam_mulai`   time                             DEFAULT null,
-    `jam_selesai` time                             DEFAULT null,
-    `status`      int(11)                          DEFAULT '1' COMMENT '0=tidak valid, 1= jam valid(kelipatan 50menit), 2 = jam yang harusnya tisak di pakai(jam istirahat)'
+    `jam`         varchar(11) NOT NULL DEFAULT '',
+    `sks`         smallint(1)        NOT NULL DEFAULT '0',
+    `jam_mulai`   time                 DEFAULT null,
+    `jam_selesai` time                 DEFAULT null,
+    `status`      int(11)                     DEFAULT '1' COMMENT '0=tidak valid, 1= jam valid(kelipatan 50menit), 2 = jam yang harusnya tisak di pakai(jam istirahat)'
 );
 
 CREATE TABLE `sesi_kuliah_bentrok`
@@ -93,19 +91,21 @@ CREATE TABLE `sesi_kuliah_bentrok`
 CREATE TABLE `krs_record`
 (
     `id`        int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `ta`        int(10)                NOT NULL DEFAULT '0',
-    `kdmk`      varchar(255)           NOT NULL,
-    `id_jadwal` int(11)                NOT NULL,
-    `nim_dinus` varchar(50)            NOT NULL,
-    `sts`       char(1)                NOT NULL,
-    `sks`       int(11)                NOT NULL,
-    `modul`     int(1)                 NOT NULL DEFAULT '0'
+    `ta`        int(10)             NOT NULL DEFAULT '0',
+    `kur_id`    int(11),
+    `kdmk`      varchar(255) NOT NULL,
+    `id_jadwal` int(11)             NOT NULL,
+    `nim_dinus` varchar(50)  NOT NULL,
+    `sts`       char(1)      NOT NULL,
+    `sks`       int(11)             NOT NULL,
+    `modul`     int(1)              NOT NULL DEFAULT '0'
 );
 
 CREATE TABLE `krs_record_log`
 (
-    `id_krs`     int(11)           DEFAULT null,
+    `id_krs`     int(11)            DEFAULT null,
     `nim_dinus`  varchar(50)        DEFAULT null,
+    `kur_id`     int(11),
     `kdmk`       varchar(255)       DEFAULT null,
     `aksi`       tinyint(3)         DEFAULT null COMMENT '1=insert,2=delete',
     `id_jadwal`  int(11)            DEFAULT null,
@@ -117,9 +117,10 @@ CREATE TABLE `jadwal_tawar`
 (
     `id`         int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `ta`         int(10)             NOT NULL DEFAULT '0',
-    `kdmk`       varchar(15)         NOT NULL,
-    `klpk`       varchar(15)         NOT NULL,
-    `klpk_2`     varchar(15)                  DEFAULT null,
+    `kur_id`     int(11),
+    `kdmk`       varchar(15) NOT NULL,
+    `klpk`       varchar(15) NOT NULL,
+    `klpk_2`     varchar(15) DEFAULT null,
     `kdds`       int(10)             NOT NULL,
     `kdds2`      int(10)                      DEFAULT null,
     `jmax`       int(3)                       DEFAULT '0',
@@ -141,17 +142,17 @@ CREATE TABLE `mhs_ijin_krs`
 (
     `id`        int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `ta`        int(10)             NOT NULL DEFAULT '0',
-    `nim_dinus` varchar(50)                  DEFAULT null,
+    `nim_dinus` varchar(50)        DEFAULT null,
     `ijinkan`   tinyint(1)                   DEFAULT null,
-    `time`      timestamp           NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+    `time`      timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE `herregist_mahasiswa`
 (
     `id`        int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `nim_dinus` varchar(50)                  DEFAULT null,
+    `nim_dinus` varchar(50) DEFAULT null,
     `ta`        int(10)             NOT NULL DEFAULT '0',
-    `date_reg`  datetime                     DEFAULT null
+    `date_reg`  datetime    DEFAULT null
 );
 
 CREATE TABLE `mhs_dipaketkan`
@@ -163,7 +164,7 @@ CREATE TABLE `mhs_dipaketkan`
 CREATE TABLE `ruang`
 (
     `id`             int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `nama`           varchar(250)        NOT NULL,
+    `nama`           varchar(250) NOT NULL,
     `nama2`          varchar(250) DEFAULT '-',
     `id_jenis_makul` int(11)      DEFAULT null,
     `id_fakultas`    varchar(5)   DEFAULT null,
@@ -179,8 +180,8 @@ CREATE TABLE `tahun_ajaran`
 (
     `id`               bigint(20) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `kode`             int(10)                NOT NULL,
-    `tahun_akhir`      varchar(255)           NOT NULL,
-    `tahun_awal`       varchar(255)           NOT NULL,
+    `tahun_akhir`      varchar(255) NOT NULL,
+    `tahun_awal`       varchar(255) NOT NULL,
     `jns_smt`          int(1)                 NOT NULL COMMENT '1 = reg ganjil, 2 = reg genap, 3 = sp ganjil, 4 = sp genap',
     `set_aktif`        tinyint(1)             NOT NULL,
     `biku_tagih_jenis` tinyint(1)  DEFAULT '0' COMMENT '1 = spp; 2 = sks; 3 = kekurangan',
@@ -197,6 +198,7 @@ CREATE TABLE `daftar_nilai`
 (
     `_id`       int(10) PRIMARY KEY NOT NULL AUTO_INCREMENT,
     `nim_dinus` varchar(50) DEFAULT null,
+    `kur_id`    int(11),
     `kdmk`      varchar(20) DEFAULT null,
     `nl`        char(2)     DEFAULT null,
     `hide`      smallint(1) DEFAULT '0' COMMENT '0 = nilai muncul;\r\n1 = nilai disembunyikan (utk keperluan spt hapus mata kuliah)'
@@ -205,10 +207,10 @@ CREATE TABLE `daftar_nilai`
 CREATE TABLE `validasi_krs_mhs`
 (
     `id`        int(11) PRIMARY KEY NOT NULL AUTO_INCREMENT,
-    `nim_dinus` varchar(50)         NOT NULL,
-    `job_date`  datetime                     DEFAULT null,
-    `job_host`  varchar(255)                 DEFAULT null,
-    `job_agent` varchar(255)                 DEFAULT null,
+    `nim_dinus` varchar(50) NOT NULL,
+    `job_date`  datetime     DEFAULT null,
+    `job_host`  varchar(255) DEFAULT null,
+    `job_agent` varchar(255) DEFAULT null,
     `ta`        int(10)             NOT NULL DEFAULT '0'
 );
 
@@ -250,7 +252,7 @@ ALTER TABLE `krs_record`
     ADD FOREIGN KEY (`ta`) REFERENCES `tahun_ajaran` (`kode`);
 
 ALTER TABLE `krs_record`
-    ADD FOREIGN KEY (`kdmk`) REFERENCES `matkul_kurikulum` (`kdmk`);
+    ADD FOREIGN KEY (`kur_id`, `kdmk`) REFERENCES `matkul_kurikulum` (`kur_id`, `kdmk`);
 
 ALTER TABLE `krs_record`
     ADD FOREIGN KEY (`id_jadwal`) REFERENCES `jadwal_tawar` (`id`);
@@ -259,28 +261,28 @@ ALTER TABLE `krs_record`
     ADD FOREIGN KEY (`nim_dinus`) REFERENCES `mahasiswa_dinus` (`nim_dinus`);
 
 ALTER TABLE `krs_record_log`
-    ADD FOREIGN KEY (`id_krs`) REFERENCES `krs_record` (`id`); #donn harusnya
+    ADD FOREIGN KEY (`id_krs`) REFERENCES `krs_record` (`id`);
 
 ALTER TABLE `krs_record_log`
     ADD FOREIGN KEY (`nim_dinus`) REFERENCES `mahasiswa_dinus` (`nim_dinus`);
 
 ALTER TABLE `krs_record_log`
-    ADD FOREIGN KEY (`kdmk`) REFERENCES `matkul_kurikulum` (`kdmk`);
+    ADD FOREIGN KEY (`kur_id`, `kdmk`) REFERENCES `matkul_kurikulum` (`kur_id`, `kdmk`);
 
 ALTER TABLE `jadwal_tawar`
-    ADD FOREIGN KEY (`kdmk`) REFERENCES `matkul_kurikulum` (`kdmk`);
+    ADD FOREIGN KEY (`kur_id`, `kdmk`) REFERENCES `matkul_kurikulum` (`kur_id`, `kdmk`);
 
 ALTER TABLE `jadwal_tawar`
     ADD FOREIGN KEY (`id_hari1`) REFERENCES `hari` (`id`);
 
 ALTER TABLE `jadwal_tawar`
-    ADD FOREIGN KEY (`id_hari2`) REFERENCES `hari` (`id`); # solve harusnya soalnya sudah saya ganti hari id jadi unique
+    ADD FOREIGN KEY (`id_hari2`) REFERENCES `hari` (`id`);
 
 ALTER TABLE `jadwal_tawar`
     ADD FOREIGN KEY (`id_hari3`) REFERENCES `hari` (`id`);
 
 ALTER TABLE `jadwal_tawar`
-    ADD FOREIGN KEY (`id_sesi1`) REFERENCES `sesi_kuliah` (`id`); #
+    ADD FOREIGN KEY (`id_sesi1`) REFERENCES `sesi_kuliah` (`id`);
 
 ALTER TABLE `jadwal_tawar`
     ADD FOREIGN KEY (`id_sesi2`) REFERENCES `sesi_kuliah` (`id`);
@@ -318,17 +320,32 @@ ALTER TABLE `sesi_kuliah_bentrok`
 ALTER TABLE `sesi_kuliah_bentrok`
     ADD CONSTRAINT `FK_sesi_kuliah_bentrok2` FOREIGN KEY (`id_bentrok`) REFERENCES `sesi_kuliah` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
-# ALTER TABLE `tahun_ajaran`
-    #     ADD FOREIGN KEY (`kode`) REFERENCES `tahun_ajaran` (`id`);
+-- #
+-- ALTER TABLE `tahun_ajaran`
+--     # ADD FOREIGN KEY (`kode`) REFERENCES `tahun_ajaran` (`id`);
 
 ALTER TABLE `daftar_nilai`
     ADD FOREIGN KEY (`nim_dinus`) REFERENCES `mahasiswa_dinus` (`nim_dinus`);
 
 ALTER TABLE `daftar_nilai`
-    ADD FOREIGN KEY (`kdmk`) REFERENCES `matkul_kurikulum` (`kdmk`);
+    ADD FOREIGN KEY (`kur_id`, `kdmk`) REFERENCES `matkul_kurikulum` (`kur_id`, `kdmk`);
 
 ALTER TABLE `validasi_krs_mhs`
     ADD FOREIGN KEY (`nim_dinus`) REFERENCES `mahasiswa_dinus` (`nim_dinus`);
 
 ALTER TABLE `validasi_krs_mhs`
     ADD FOREIGN KEY (`ta`) REFERENCES `tahun_ajaran` (`kode`);
+
+
+-- #MENGATASI
+DATA SESI DAN RUANG YG DI DB 0 BIAR BISA DI BUAT NULL
+ALTER TABLE `jadwal_tawar`
+    MODIFY `id_sesi1` INT NULL,
+    MODIFY `id_sesi2` INT NULL,
+    MODIFY `id_sesi3` INT NULL,
+    MODIFY `id_ruang1` INT NULL,
+    MODIFY `id_ruang2` INT NULL,
+    MODIFY `id_ruang3` INT NULL;
+
+ALTER TABLE `matkul_kurikulum`
+    MODIFY `kur_aktif` TINYINT(1);
