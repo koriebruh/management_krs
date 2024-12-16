@@ -59,8 +59,11 @@ select * from sesi_kuliah;
 select * from sesi_kuliah_bentrok;
 
 
-select * from daftar_nilai WHERE nim_dinus ='8f218f15d69c6178c2b2a6ccd975ba28';
+select * from daftar_nilai WHERE nim_dinus ='6f0581e506eda3d4cd846ef75f5165d2';
+4003953,"20232",P31330442,283282,"6f0581e506eda3d4cd846ef75f5165d2",B,6,0,0
 
+select * from matkul_kurikulum;
+select * from matkul_kurikulum where kdmk = 'P31330442';
 
 select * from jadwal_tawar;
 desc jadwal_tawar;
@@ -78,10 +81,14 @@ SELECT * FROM sesi_kuliah;
 desc jadwal_tawar;
 
 
+select * from krs_record;
+
 # delete from sesi_kuliah_bentrok;
 SHOW TABLES ;
-delete from jadwal_tawar;
-select * from jadwal_tawar;
+delete from krs_record;
+select * from krs_record;
+
+
 
 
 ALTER TABLE `jadwal_tawar`
@@ -94,3 +101,7 @@ ALTER TABLE `jadwal_tawar`
 
 
 #
+desc matkul_kurikulum;
+
+ALTER TABLE `matkul_kurikulum`
+    MODIFY `kur_aktif` TINYINT(1);

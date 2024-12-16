@@ -894,6 +894,7 @@ func TestJadwalTawar(t *testing.T) {
 	log.Println("YEY SUCCESS")
 }
 
+// WORK
 func TestKrsRecord(t *testing.T) {
 	db := conf.InitDB()
 	file, err := os.Open("data_krs/krs_record.csv")

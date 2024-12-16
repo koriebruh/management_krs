@@ -348,3 +348,6 @@ ALTER TABLE `jadwal_tawar`
     MODIFY `id_ruang1` INT NULL,
     MODIFY `id_ruang2` INT NULL,
     MODIFY `id_ruang3` INT NULL;
+
+ALTER TABLE `matkul_kurikulum`
+    MODIFY `kur_aktif` TINYINT(1);
