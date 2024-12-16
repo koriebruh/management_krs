@@ -14,12 +14,12 @@ type JadwalTawar struct {
 	IDHari1    int8            `gorm:"not null"`
 	IDHari2    int8            `gorm:"not null"`
 	IDHari3    int8            `gorm:"not null"`
-	IDSesi1    int             `gorm:"not null"`
-	IDSesi2    int             `gorm:"not null"`
-	IDSesi3    int             `gorm:"not null"`
-	IDRuang1   int             `gorm:"not null"`
-	IDRuang2   int             `gorm:"not null"`
-	IDRuang3   int             `gorm:"not null"`
+	IDSesi1    *int            `gorm:"not null"`
+	IDSesi2    *int            `gorm:"not null"`
+	IDSesi3    *int            `gorm:"not null"`
+	IDRuang1   *int            `gorm:"not null"`
+	IDRuang2   *int            `gorm:"not null"`
+	IDRuang3   *int            `gorm:"not null"`
 	JnsJam     int8            `gorm:"not null;comment:1=pagi, 2=malam, 3=pagi-malam"`
 	OpenClass  bool            `gorm:"not null;default:1;comment:kelas dibuka utk KRS : 1 = open; 0 = close"`
 	MataKuliah MatkulKurikulum `gorm:"foreignKey:Kdmk;references:Kdmk"`

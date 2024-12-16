@@ -4,6 +4,7 @@ import (
 	"encoding/csv"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 	"koriebruh/try/conf"
 	"koriebruh/try/domain"
 	"log"
@@ -613,7 +614,7 @@ func TestMahasiswaDiPaketkan(t *testing.T) {
 	log.Println("YEY SUCCESS")
 }
 
-// WORK
+// WORK tapi lama nanti kalo sempat pakai goroutine
 func TestDaftarNilai(t *testing.T) {
 	db := conf.InitDB()
 	file, err := os.Open("data_krs/daftar_nilai.csv")
@@ -780,6 +781,10 @@ func TestSesiKuliahBentrok(t *testing.T) {
 	&domain.KrsRecordLog{},
 */
 
+/*
+DATA TOLOL MANA ADA ID DAN RUANG 0 OK KITA BUAT DI BOLEH NULL AJA
+OK NOW WORK
+*/
 func TestJadwalTawar(t *testing.T) {
 	db := conf.InitDB()
 	file, err := os.Open("data_krs/jadwal_tawar.csv")
@@ -795,21 +800,64 @@ func TestJadwalTawar(t *testing.T) {
 			continue
 		}
 
-		//VALIDASI JIKA DATA ID SESI YG DIMASUKAN TIDAK ADA SKIP
-		var sesiKuliah domain.SesiKuliah
-		err := db.Where("id = ?", atoi(record[13])).First(&sesiKuliah).Error
-		if err != nil {
-			log.Printf("id_sesi2 %d tidak ditemukan di sesi_kuliah, skipping", atoi(record[13]))
-			continue
-		}
-
 		// JIKA HARI/SESI/RUANG == 0 DI ISI null
-
-		ifZeroRetturnNul := func(x string) int {
+		ifZeroRetturnNul := func(x string) *int {
 			if x == "" || x == "0" {
-				return 0 // Return 0 to indicate NULL equivalent
+				return nil // Return nil jika string kosong atau "0"
 			}
-			return atoi(x)
+			result := atoi(x)
+			return &result // Return pointer dari hasil konversi
+		}
+		// PENGECEKAN KETIKA RUANG HARI / RUANG / SESI / TIDAK EXIST
+		SkipKah := false
+		var HariExist domain.Hari
+		ExistHarikah := func(hari string, db2 *gorm.DB) string {
+			if hari == "0" || hari == "" {
+				log.Println("GA PERLU DI CEK")
+			} else {
+				if err = db2.Where("id = ?", hari).First(&HariExist).Error; err != nil {
+					SkipKah = true
+				}
+			}
+			return "0"
+		}
+		ExistHarikah(record[9], db)
+		ExistHarikah(record[11], db)
+		ExistHarikah(record[12], db)
+
+		var RuangExist domain.Ruang
+		ExistRuangKah := func(ruang string, db2 *gorm.DB) string {
+			if ruang == "0" || ruang == "" {
+				log.Println("GA PERLU DI CEK")
+			} else {
+				if err = db2.Where("id = ?", ruang).First(&RuangExist).Error; err != nil {
+					SkipKah = true
+				}
+			}
+			return "0"
+		}
+		ExistRuangKah(record[15], db)
+		ExistRuangKah(record[16], db)
+		ExistRuangKah(record[17], db)
+
+		var SesiExist domain.SesiKuliah
+		ExistSesi := func(sesi string, db2 *gorm.DB) string {
+			if sesi == "0" || sesi == "" {
+				log.Println("GA PERLU DI CEK")
+			} else {
+				if err = db2.Where("id = ?", sesi).First(&SesiExist).Error; err != nil {
+					SkipKah = true
+				}
+			}
+			return "0"
+		}
+		ExistSesi(record[12], db)
+		ExistSesi(record[13], db)
+		ExistSesi(record[14], db)
+
+		if SkipKah == true {
+			log.Println("ADA LINE YG DI SKIP")
+			continue
 		}
 
 		tawar := domain.JadwalTawar{
@@ -822,9 +870,9 @@ func TestJadwalTawar(t *testing.T) {
 			Kdds2:     atoi(record[6]),
 			Jmax:      atoi(record[7]),
 			Jsisa:     atoi(record[8]),
-			IDHari1:   int8(ifZeroRetturnNul(record[9])),
-			IDHari2:   int8(ifZeroRetturnNul(record[10])),
-			IDHari3:   int8(ifZeroRetturnNul(record[11])),
+			IDHari1:   int8(atoi(record[9])),
+			IDHari2:   int8(atoi(record[10])),
+			IDHari3:   int8(atoi(record[11])),
 			IDSesi1:   ifZeroRetturnNul(record[12]),
 			IDSesi2:   ifZeroRetturnNul(record[13]),
 			IDSesi3:   ifZeroRetturnNul(record[14]),
@@ -914,5 +962,63 @@ func TestKrsRecord(t *testing.T) {
 }
 
 func TestKrsRecordLog(t *testing.T) {
+	db := conf.InitDB()
+	file, err := os.Open("data_krs/krs_record_log.csv")
+	IfErrNotNil(err)
+	defer file.Close()
 
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+	IfErrNotNil(err)
+
+	const layout = "2006-01-02 15:04:05.000"
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		//CHECK NIM_DINUS
+		var mahasiswa domain.MahasiswaDinus
+		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
+		if err != nil {
+			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
+			continue
+		}
+
+		var kdmkExist domain.MatkulKurikulum
+		if err := db.Where("kdmk = ?", record[1]).First(&kdmkExist).Error; err != nil {
+			log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[1], i)
+			continue
+		}
+
+		var idKrsExist domain.KrsRecord
+		if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
+			log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
+			continue
+		}
+
+		LastUpdate, err := time.Parse(layout, record[4])
+		if err != nil {
+			log.Fatalf("Error parsing date in line %v: %v", i, err)
+		}
+
+		recordLog := domain.KrsRecordLog{
+			IDKrs:      atoi(record[0]), // validasi dulu apkah ada
+			Kdmk:       record[1],       // validasi dulu apakh ada
+			Aksi:       int8(atoi(record[2])),
+			IDJadwal:   atoi(record[3]),
+			LastUpdate: LastUpdate,
+			NimDinus:   record[5], // validasi dulu apakh ada
+		}
+
+		// Insert ke database
+		if err := db.Create(&recordLog).Error; err != nil {
+			log.Fatalf("Error in line %v: %v", i, err)
+		}
+
+		log.Println("insert index ", i)
+	}
+
+	log.Println("YEY SUCCESS")
 }

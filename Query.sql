@@ -59,14 +59,38 @@ select * from sesi_kuliah;
 select * from sesi_kuliah_bentrok;
 
 
-select * from daftar_nilai WHERE nim_dinus ='94b3dd2e8a3217a50aa0e6694c93c154';
+select * from daftar_nilai WHERE nim_dinus ='8f218f15d69c6178c2b2a6ccd975ba28';
 
 
 select * from jadwal_tawar;
-desc jatwal_tawar;
+desc jadwal_tawar;
+SHOW CREATE TABLE jadwal_tawar;
+
+desc hari;
+select * from hari;
+select * from ruang;
+
+desc jadwal_tawar;
+
+select * from jadwal_tawar;
 
 SELECT * FROM sesi_kuliah;
+desc jadwal_tawar;
 
 
 # delete from sesi_kuliah_bentrok;
 SHOW TABLES ;
+delete from jadwal_tawar;
+select * from jadwal_tawar;
+
+
+ALTER TABLE `jadwal_tawar`
+    MODIFY `id_sesi1` INT NULL,
+    MODIFY `id_sesi2` INT NULL,
+    MODIFY `id_sesi3` INT NULL,
+    MODIFY `id_ruang1` INT NULL,
+    MODIFY `id_ruang2` INT NULL,
+    MODIFY `id_ruang3` INT NULL;
+
+
+#

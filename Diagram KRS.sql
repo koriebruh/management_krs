@@ -339,3 +339,12 @@ ALTER TABLE `validasi_krs_mhs`
 ALTER TABLE `validasi_krs_mhs`
     ADD FOREIGN KEY (`ta`) REFERENCES `tahun_ajaran` (`kode`);
 
+
+#MENGATASI DATA SESI DAN RUANG YG DI DB 0 BIAR BISA DI BUAT NULL
+ALTER TABLE `jadwal_tawar`
+    MODIFY `id_sesi1` INT NULL,
+    MODIFY `id_sesi2` INT NULL,
+    MODIFY `id_sesi3` INT NULL,
+    MODIFY `id_ruang1` INT NULL,
+    MODIFY `id_ruang2` INT NULL,
+    MODIFY `id_ruang3` INT NULL;
