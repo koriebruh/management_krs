@@ -19,12 +19,12 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "nim_dinus":"a11.2022.14616",
-  "pass_mhs":"jamal123"
+  "nim_dinus":"d263aa7f29800ba04bc6e8ad674b58cd",
+  "pass_mhs":"atur sendiri lah"
 }
 
 ### CURRENT USER
 GET http://localhost:3000/api/user
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiJhMTEuMjAyMi4xNDYxNiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDE1ODA2MX0.QnTPpnuAtE1V3Lue9r3JFsuod00rDSRN1YTFfSr8jLU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiJkMjYzYWE3ZjI5ODAwYmEwNGJjNmU4YWQ2NzRiNThjZCIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQxOTc1NH0.Tch056JO8LZ6wkShMiiDnx_652K-fPpx8M-_A1PQnc0

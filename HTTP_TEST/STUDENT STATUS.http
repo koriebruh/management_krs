@@ -1,0 +1,20 @@
+### GET request to example server
+### LOGIN
+POST http://localhost:3000/api/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nim_dinus":"d263aa7f29800ba04bc6e8ad674b58cd",
+  "pass_mhs":"atur sendiri lah"
+}
+
+
+### TEST STATUS STUDENT
+GET https://localhost:3000/api/students/status
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer
+
+
+###

@@ -23,6 +23,11 @@ func main() {
 	authService := service.NewAuthService(userRepository, db, validate, cacheRepository)
 	authController := controller.NewAuthController(authService)
 
+	//3. STATUS
+	studentStatusRepository := repository.NewStudentStatusRepository()
+	studentStatusServices := service.NewStudentStatusServices(db, studentStatusRepository)
+	studentStatusController := controller.NewStudentStatusController(studentStatusServices)
+
 	app := fiber.New()
 
 	app.Get("/", hellobg)
@@ -30,6 +35,8 @@ func main() {
 	app.Post("api/auth/login", authController.Login)
 	authorized := app.Group("/", conf.JWTAuthMiddleware)
 	authorized.Get("api/user", authController.CurrentAcc)
+
+	authorized.Get("api/students/status", studentStatusController.InformationStudent)
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {
