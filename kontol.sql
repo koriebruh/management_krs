@@ -9,3 +9,8 @@ desc matkul_kurikulum;
 
 select * from  krs_record;
 select * from  krs_record_log;
+
+
+use krs_management;
+
+select * from tagihan_mhs where nim_dinus = '4cd489ef6697a6b3cdf790f8474ec443';

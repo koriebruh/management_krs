@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"gorm.io/gorm"
+	"koriebruh/try/domain"
 	"koriebruh/try/req_db"
 )
 
 type StudentStatusRepository interface {
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error)
-	//SetClassTime(ctx context.Context, db *gorm.DB)
+	SetClassTime(ctx context.Context, db *gorm.DB, classOption string)
 	//GetAllKRSPick(ctx context.Context, db *gorm.DB)
 	//ExceptionInsertKRS(ctx context.Context, db *gorm.DB)
 	//StatusKRS(ctx context.Context, db *gorm.DB)
@@ -25,13 +26,26 @@ func NewStudentStatusRepository() *StudentStatusRepositoryImpl {
 func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error) {
 	var studentStatus req_db.InformationStudent
 
-	if err := db.WithContext(ctx).Preload("TagihanMhs").
-		Preload("HerregistMahasiswa").
-		Preload("MahasiswaDinus").
-		Where("mahasiswa_dinus.nim_dinus = ?", nimDinus).
-		First(&studentStatus).Error; err != nil {
+	var Mhs domain.MahasiswaDinus
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&Mhs).Error; err != nil {
+		return nil, fmt.Errorf("error find where nim := %v and err is %e", nimDinus, err)
+	}
 
-		return nil, fmt.Errorf("error nih bg %e", err)
+	var Heregis domain.HerregistMahasiswa
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&Heregis).Error; err != nil {
+		return nil, fmt.Errorf("error find herregis where nim := %v and err is %e", nimDinus, err)
+	}
+
+	var Tagihan []domain.TagihanMhs
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).Find(&Tagihan).Error; err != nil {
+		return nil, fmt.Errorf("error find tagihan  where nim := %v and err is %e", nimDinus, err)
+	}
+
+	//MAPING
+	studentStatus = req_db.InformationStudent{
+		MahasiswaDinus:     Mhs,
+		HerregistMahasiswa: Heregis,
+		TagihanMahasiswa:   Tagihan,
 	}
 
 	return &studentStatus, nil
