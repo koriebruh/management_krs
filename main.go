@@ -25,7 +25,7 @@ func main() {
 
 	//3. STATUS
 	studentStatusRepository := repository.NewStudentStatusRepository()
-	studentStatusServices := service.NewStudentStatusServices(db, studentStatusRepository)
+	studentStatusServices := service.NewStudentStatusServices(db, studentStatusRepository, validate)
 	studentStatusController := controller.NewStudentStatusController(studentStatusServices)
 
 	app := fiber.New()
@@ -37,6 +37,7 @@ func main() {
 	authorized.Get("api/user", authController.CurrentAcc)
 
 	authorized.Get("api/students/status", studentStatusController.InformationStudent)
+	authorized.Put("api/students/class", studentStatusController.SetClassTime)
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {

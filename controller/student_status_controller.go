@@ -10,7 +10,7 @@ import (
 
 type StudentStatusController interface {
 	InformationStudent(ctx *fiber.Ctx) error
-	//SetClassTime()
+	SetClassTime(ctx *fiber.Ctx) error
 	//GetAllKRSPick()
 	//ExceptionInsertKRS()
 	//StatusKRS()
@@ -37,4 +37,25 @@ func (c StudentStatusControllerImpl) InformationStudent(ctx *fiber.Ctx) error {
 		Status: "OK",
 		Data:   studentInfo,
 	})
+}
+
+func (c StudentStatusControllerImpl) SetClassTime(ctx *fiber.Ctx) error {
+	var req dto.ChangeClassReq
+	if err := ctx.BodyParser(&req); err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	if err := c.StudentStatusService.SetClassTime(ctx.Context(), NimDinus, req); err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data: map[string]interface{}{
+			"message": "success update class",
+		},
+	})
+
 }

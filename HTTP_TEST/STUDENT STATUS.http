@@ -14,7 +14,16 @@ Content-Type: application/json
 GET https://localhost:3000/api/students/status
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiJkNzNjNzY0YmU3ZjdkYWUzZDk3N2MxNjUwMmE0MTJkYyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ0ODgwNH0.JVmyb_K89B1_pfC16DhLAw1z-En7tufdlhk2Tl7ICW0
+Authorization: Bearere yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y2Q0ODllZjY2OTdhNmIzY2RmNzkwZjg0NzRlYzQ0MyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ1NTgzMn0.NRXsS2zjgkgDiWauRVynA6bG_YSPrEfObAQaChGWulA
 
 
 ###
+### TEST STATUS STUDENT
+PUT https://localhost:3000/api/students/class
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y2Q0ODllZjY2OTdhNmIzY2RmNzkwZjg0NzRlYzQ0MyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ1NTgzMn0.NRXsS2zjgkgDiWauRVynA6bG_YSPrEfObAQaChGWulA
+
+{
+  "kelas": 100
+}

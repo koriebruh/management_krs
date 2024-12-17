@@ -10,7 +10,7 @@ import (
 
 type StudentStatusRepository interface {
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error)
-	SetClassTime(ctx context.Context, db *gorm.DB, classOption string)
+	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	//GetAllKRSPick(ctx context.Context, db *gorm.DB)
 	//ExceptionInsertKRS(ctx context.Context, db *gorm.DB)
 	//StatusKRS(ctx context.Context, db *gorm.DB)
@@ -49,4 +49,15 @@ func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db 
 	}
 
 	return &studentStatus, nil
+}
+
+func (s StudentStatusRepositoryImpl) SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error {
+
+	if err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).
+		Where("nim_dinus = ?", nimDinus).Update("kelas", classOption).
+		Error; err != nil {
+		return fmt.Errorf("failed to update class for nim_dinus=%s: %w", nimDinus, err)
+	}
+
+	return nil
 }
