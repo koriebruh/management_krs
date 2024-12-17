@@ -351,3 +351,5 @@ ALTER TABLE `jadwal_tawar`
 
 ALTER TABLE `matkul_kurikulum`
     MODIFY `kur_aktif` TINYINT(1);
+
+ALTER TABLE krs_record_log RENAME COLUMN lastUpdate TO last_update;

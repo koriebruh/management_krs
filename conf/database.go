@@ -79,9 +79,18 @@ func InitDB() *gorm.DB {
 	//// Re-enable foreign key checks after migration
 	//db.Exec("SET FOREIGN_KEY_CHECKS = 1")
 
+	//SETUP CONNECTION POOL
+	sqlDB, err := db.DB()
 	if err != nil {
-		log.Fatalf("failed to migrate in database: %v", err)
+		log.Fatalf("failed to get *sql.DB from GORM: %v", err)
 	}
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetConnMaxLifetime(60)
+
+	//if err != nil {
+	//	log.Fatalf("failed to migrate in database: %v", err)
+	//}
 
 	slog.Info("connection established")
 	return db

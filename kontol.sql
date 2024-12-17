@@ -8,3 +8,4 @@ desc matkul_kurikulum;
 
 
 select * from  krs_record;
+select * from  krs_record_log;

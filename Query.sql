@@ -81,7 +81,8 @@ SELECT * FROM sesi_kuliah;
 desc jadwal_tawar;
 
 
-select * from krs_record;
+select * from krs_record_log;
+DESC krs_record_log;
 
 # delete from sesi_kuliah_bentrok;
 SHOW TABLES ;
@@ -106,3 +107,6 @@ desc matkul_kurikulum;
 
 ALTER TABLE `matkul_kurikulum`
     MODIFY `kur_aktif` TINYINT(1);
+
+desc krs_record_log;
+ALTER TABLE krs_record_log RENAME COLUMN lastUpdate TO last_update;

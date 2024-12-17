@@ -908,8 +908,8 @@ func TestKrsRecord(t *testing.T) {
 		log.Fatalf("Error reading CSV file: %v", err)
 	}
 
-	var wg sync.WaitGroup         // Membuat WaitGroup untuk menunggu semua goroutine selesai
-	sem := make(chan struct{}, 5) // Batas maksimal 5 goroutine concurrent untuk menghindari overload DB
+	var wg sync.WaitGroup          // Membuat WaitGroup untuk menunggu semua goroutine selesai
+	sem := make(chan struct{}, 50) // Batas maksimal 5 goroutine concurrent untuk menghindari overload DB
 
 	for i, record := range records {
 		if i == 0 {
@@ -989,70 +989,168 @@ func TestKrsRecord(t *testing.T) {
 	log.Println("YEY SUCCESS")
 }
 
+//func TestKrsRecordLog(t *testing.T) {
+//	db := conf.InitDB()
+//	file, err := os.Open("data_krs/krs_record_log.csv")
+//	IfErrNotNil(err)
+//	defer file.Close()
+//
+//	reader := csv.NewReader(file)
+//	records, err := reader.ReadAll()
+//	IfErrNotNil(err)
+//
+//	const layout = "2006-01-02 15:04:05.000"
+//
+//	for i, record := range records {
+//		if i == 0 {
+//			continue
+//		}
+//
+//		//CHECK NIM_DINUS
+//		var mahasiswa domain.MahasiswaDinus
+//		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
+//		if err != nil {
+//			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
+//			continue
+//		}
+//
+//		var kdmkExist domain.MatkulKurikulum
+//		if err := db.Where("kdmk = ?", record[1]).First(&kdmkExist).Error; err != nil {
+//			log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[1], i)
+//			continue
+//		}
+//
+//		var idKrsExist domain.KrsRecord
+//		if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
+//			log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
+//			continue
+//		}
+//
+//		var KrsIdExist domain.KrsRecordLog
+//		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
+//			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
+//			continue
+//		}
+//
+//		LastUpdate, err := time.Parse(layout, record[4])
+//		if err != nil {
+//			log.Fatalf("Error parsing date in line %v: %v", i, err)
+//		}
+//
+//		recordLog := domain.KrsRecordLog{
+//			IDKrs:      atoi(record[0]), // validasi dulu apkah ada
+//			Kdmk:       record[1],       // validasi dulu apakh ada
+//			Aksi:       int8(atoi(record[2])),
+//			IDJadwal:   atoi(record[3]),
+//			LastUpdate: LastUpdate,
+//			NimDinus:   record[5], // validasi dulu apakh ada
+//		}
+//
+//		// Insert ke database
+//		if err := db.Create(&recordLog).Error; err != nil {
+//			log.Fatalf("Error in line %v: %v", i, err)
+//		}
+//
+//		log.Println("insert index ", i)
+//	}
+//
+//	log.Println("YEY SUCCESS")
+//}
+
 func TestKrsRecordLog(t *testing.T) {
 	db := conf.InitDB()
+
+	// Membuka file CSV
 	file, err := os.Open("data_krs/krs_record_log.csv")
-	IfErrNotNil(err)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
 	defer file.Close()
 
+	// Membaca seluruh isi file CSV
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
-	IfErrNotNil(err)
+	if err != nil {
+		log.Fatalf("Error reading CSV file: %v", err)
+	}
 
 	const layout = "2006-01-02 15:04:05.000"
 
+	// Membatasi goroutine menjadi 50
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 50) // Channel untuk membatasi jumlah goroutine
+
 	for i, record := range records {
 		if i == 0 {
-			continue
+			continue // Skip header
 		}
 
-		//CHECK NIM_DINUS
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
-			continue
-		}
+		// Mulai goroutine
+		wg.Add(1)
+		sem <- struct{}{} // Mengambil slot di channel (menunggu jika lebih dari 50)
 
-		var kdmkExist domain.MatkulKurikulum
-		if err := db.Where("kdmk = ?", record[1]).First(&kdmkExist).Error; err != nil {
-			log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[1], i)
-			continue
-		}
+		go func(i int, record []string) {
+			defer wg.Done()
+			defer func() { <-sem }() // Membebaskan slot setelah goroutine selesai
 
-		var idKrsExist domain.KrsRecord
-		if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
-			log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
-			continue
-		}
+			// Validasi NIM_DINUS
+			var mahasiswa domain.MahasiswaDinus
+			err := db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
+				return
+			}
 
-		var KrsIdExist domain.KrsRecordLog
-		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
-			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
-			continue
-		}
+			// Validasi KDMK
+			var kdmkExist domain.MatkulKurikulum
+			if err := db.Where("kdmk = ?", record[1]).First(&kdmkExist).Error; err != nil {
+				log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[1], i)
+				return
+			}
 
-		LastUpdate, err := time.Parse(layout, record[4])
-		if err != nil {
-			log.Fatalf("Error parsing date in line %v: %v", i, err)
-		}
+			// Validasi ID KRS
+			var idKrsExist domain.KrsRecord
+			if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
+				log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
+				return
+			}
 
-		recordLog := domain.KrsRecordLog{
-			IDKrs:      atoi(record[0]), // validasi dulu apkah ada
-			Kdmk:       record[1],       // validasi dulu apakh ada
-			Aksi:       int8(atoi(record[2])),
-			IDJadwal:   atoi(record[3]),
-			LastUpdate: LastUpdate,
-			NimDinus:   record[5], // validasi dulu apakh ada
-		}
+			// Cek apakah KrsRecordLog sudah ada
+			var KrsIdExist domain.KrsRecordLog
+			if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err == nil {
+				log.Printf("KrsRecordLog %s already exists, skipping line %v", record[0], i)
+				return
+			}
 
-		// Insert ke database
-		if err := db.Create(&recordLog).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
+			// Parsing LastUpdate
+			LastUpdate, err := time.Parse(layout, record[4])
+			if err != nil {
+				log.Printf("Error parsing date in line %v: %v", i, err)
+				return
+			}
 
-		log.Println("insert index ", i)
+			// Membuat record log
+			recordLog := domain.KrsRecordLog{
+				IDKrs:      atoi(record[0]),
+				Kdmk:       record[1],
+				Aksi:       int8(atoi(record[2])),
+				IDJadwal:   atoi(record[3]),
+				LastUpdate: LastUpdate,
+				NimDinus:   record[5],
+			}
+
+			// Insert ke database
+			if err := db.Create(&recordLog).Error; err != nil {
+				log.Printf("Error inserting record at line %v: %v", i, err)
+				return
+			}
+
+			log.Printf("Inserted record at index %v", i)
+		}(i, record)
 	}
+
+	// Menunggu semua goroutine selesai
+	wg.Wait()
 
 	log.Println("YEY SUCCESS")
 }
