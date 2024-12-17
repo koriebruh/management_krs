@@ -7,4 +7,4 @@ select * from matkul_kurikulum;
 desc matkul_kurikulum;
 
 
-delete from matkul_kurikulum;
+select * from  krs_record;

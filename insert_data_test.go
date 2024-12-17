@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"sync"
 	"testing"
 	"time"
 )
@@ -892,79 +893,99 @@ func TestJadwalTawar(t *testing.T) {
 	log.Println("YEY SUCCESS")
 }
 
-// WORK
+// test ualang pake go routine
 func TestKrsRecord(t *testing.T) {
 	db := conf.InitDB()
 	file, err := os.Open("data_krs/krs_record.csv")
-	IfErrNotNil(err)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
 	defer file.Close()
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
-	IfErrNotNil(err)
+	if err != nil {
+		log.Fatalf("Error reading CSV file: %v", err)
+	}
 
-	const layout = "2006-01-02 15:04:05.000"
+	var wg sync.WaitGroup         // Membuat WaitGroup untuk menunggu semua goroutine selesai
+	sem := make(chan struct{}, 5) // Batas maksimal 5 goroutine concurrent untuk menghindari overload DB
 
 	for i, record := range records {
 		if i == 0 {
-			continue
+			continue // Skip header
 		}
 
-		//CHECK NIM_DINUS
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[4]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[4], i)
-			continue
-		}
+		wg.Add(1)
+		sem <- struct{}{} // Mengambil slot goroutine
 
-		//CHECK TA
-		var kodeExist domain.TahunAjaran
-		err = db.Where("kode = ?", record[1]).First(&kodeExist).Error
-		if err != nil {
-			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[1], i)
-			continue
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem // Melepaskan slot goroutine setelah selesai
+				wg.Done()
+			}()
 
-		var kdmkExist domain.MatkulKurikulum
-		if err := db.Where("kdmk = ?", record[2]).First(&kdmkExist).Error; err != nil {
-			log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[2], i)
-			continue
-		}
+			// CHECK NIM_DINUS
+			var mahasiswa domain.MahasiswaDinus
+			err = db.Where("nim_dinus = ?", record[4]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[4], i)
+				return
+			}
 
-		var idJadwalExist domain.JadwalTawar
-		if err := db.Where("id = ?", record[3]).First(&idJadwalExist).Error; err != nil {
-			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[3], i)
-			continue
-		}
+			// CHECK TA
+			var kodeExist domain.TahunAjaran
+			err = db.Where("kode = ?", record[1]).First(&kodeExist).Error
+			if err != nil {
+				log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[1], i)
+				return
+			}
 
-		var KrsIdExist domain.KrsRecord
-		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
-			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
-			continue
-		}
+			var kdmkExist domain.MatkulKurikulum
+			if err := db.Where("kdmk = ?", record[2]).First(&kdmkExist).Error; err != nil {
+				log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[2], i)
+				return
+			}
 
-		krsRecord := domain.KrsRecord{
-			ID:       atoi(record[0]),
-			TA:       atoi(record[1]), //cek aada tidak `
-			Kdmk:     record[2],       // cek ada tidak
-			IDJadwal: atoi(record[3]), // cek ada tidak
-			NimDinus: record[4],       // cek ada tiidak `
-			Sts:      record[5],
-			Sks:      atoi(record[6]),
-			Modul:    atoi(record[7]),
-		}
+			var idJadwalExist domain.JadwalTawar
+			if err := db.Where("id = ?", record[3]).First(&idJadwalExist).Error; err != nil {
+				log.Printf("KODE %s not found in jadwal_tawar, skipping line %v", record[3], i)
+				return
+			}
 
-		// Gunakan FirstOrCreate untuk mencegah duplikasi ID
-		err := db.FirstOrCreate(&krsRecord, domain.KrsRecord{ID: krsRecord.ID}).Error
-		if err != nil {
-			log.Printf("Error inserting record in line %v: %v", i, err)
-			continue
-		}
+			// Mengecek apakah data KrsRecord sudah ada
+			var KrsIdExist domain.KrsRecord
+			if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err == nil {
+				log.Printf("Krs %s already exists, skipping line %v", record[0], i)
+				return
+			}
 
-		log.Println("insert index ", i)
+			// Membuat objek krsRecord
+			krsRecord := domain.KrsRecord{
+				ID:       atoi(record[0]),
+				TA:       atoi(record[1]),
+				Kdmk:     record[2],
+				IDJadwal: atoi(record[3]),
+				NimDinus: record[4],
+				Sts:      record[5],
+				Sks:      atoi(record[6]),
+				Modul:    atoi(record[7]),
+			}
+
+			// Memulai transaksi untuk insert data
+			tx := db.Begin()
+			if err := tx.Create(&krsRecord).Error; err != nil {
+				tx.Rollback() // Rollback jika ada error
+				log.Printf("Error inserting data at index %d: %v", i, err)
+				return
+			}
+
+			tx.Commit()
+			log.Printf("Insert successful at index %d", i)
+		}(i, record)
 	}
 
+	wg.Wait() // Menunggu semua goroutine selesai
 	log.Println("YEY SUCCESS")
 }
 

@@ -85,7 +85,7 @@ select * from krs_record;
 
 # delete from sesi_kuliah_bentrok;
 SHOW TABLES ;
-delete from krs_record;
+# delete from krs_record;
 select * from krs_record;
 
 
