@@ -111,18 +111,16 @@ func TestInsertMatkulkurikulum(t *testing.T) {
 			SksP:          int16(atoi(record[7])),
 			Smt:           atoi(record[8]),
 			JnsSmt:        atoi(record[9]),
-			Aktif:         record[10] == "true",
+			Aktif:         int8(atoi(record[10])),
 			KurNama:       record[11],
 			KelompokMakul: record[12],
-			KurAktif:      record[13] == "true",
+			KurAktif:      int8(atoi(record[13])),
 			JenisMatkul:   record[14],
 		}
 
 		if err := db.Create(&mk).Error; err != nil {
 			log.Fatalf("err in line %v and err bcs %e", i, err)
 		}
-
-		log.Println("success nih bg line ke ", i)
 
 	}
 }
@@ -957,9 +955,11 @@ func TestKrsRecord(t *testing.T) {
 			Modul:    atoi(record[7]),
 		}
 
-		// Insert ke database
-		if err := db.Create(&krsRecord).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+		// Gunakan FirstOrCreate untuk mencegah duplikasi ID
+		err := db.FirstOrCreate(&krsRecord, domain.KrsRecord{ID: krsRecord.ID}).Error
+		if err != nil {
+			log.Printf("Error inserting record in line %v: %v", i, err)
+			continue
 		}
 
 		log.Println("insert index ", i)

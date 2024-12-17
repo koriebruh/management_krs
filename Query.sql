@@ -91,6 +91,7 @@ select * from krs_record;
 
 
 
+
 ALTER TABLE `jadwal_tawar`
     MODIFY `id_sesi1` INT NULL,
     MODIFY `id_sesi2` INT NULL,

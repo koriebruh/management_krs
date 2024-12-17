@@ -11,10 +11,10 @@ type MatkulKurikulum struct {
 	SksP          int16
 	Smt           int
 	JnsSmt        int
-	Aktif         bool
+	Aktif         int8
 	KurNama       string
 	KelompokMakul string `gorm:"type:enum('MPK','MKK','MKB','MKD','MBB','MPB')"`
-	KurAktif      bool   `gorm:"type:bit(1)"`
+	KurAktif      int8   `gorm:"type:bit(1)"`
 	JenisMatkul   string `gorm:"type:enum('wajib','pilihan')"`
 }
 
