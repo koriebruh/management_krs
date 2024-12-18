@@ -6,6 +6,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"koriebruh/try/dto"
+	"koriebruh/try/helper"
 	"koriebruh/try/repository"
 	"koriebruh/try/req_db"
 )
@@ -33,7 +34,7 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		student, err := s.StudentStatusRepository.InformationStudent(ctx, tx, NimMhs)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}
 		result = *student
 
@@ -49,7 +50,7 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 
 func (s StudentStatusServicesImpl) SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error {
 	if err := s.Validate.Struct(req); err != nil {
-		return fmt.Errorf("validation failed: %w", err)
+		return fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
 	}
 
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {

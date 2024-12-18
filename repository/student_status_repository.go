@@ -53,6 +53,18 @@ func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db 
 
 func (s StudentStatusRepositoryImpl) SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error {
 
+	var CountKrsInsert int64
+
+	if err := db.WithContext(ctx).Model(&domain.KrsRecord{}).
+		Where("nim_dinus = ?", nimDinus).
+		Count(&CountKrsInsert).Error; err != nil {
+		return fmt.Errorf("failed to check KRS record for nim_dinus=%s: %w", nimDinus, err)
+	}
+
+	if CountKrsInsert > 0 {
+		return fmt.Errorf("anda sudah memanmbahkan data di krs sejumlah %v anda tidak bisa mengubah jenis kelas", CountKrsInsert)
+	}
+
 	if err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).
 		Where("nim_dinus = ?", nimDinus).Update("kelas", classOption).
 		Error; err != nil {

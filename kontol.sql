@@ -17,3 +17,7 @@ select * from tagihan_mhs where nim_dinus = '4cd489ef6697a6b3cdf790f8474ec443';
 
 select * from mahasiswa_dinus;
 select * from mahasiswa_dinus where kelas = 2;
+
+
+select * from krs_record ;
+select * from krs_record where nim_dinus = '1a4421a533b58bb95212ca38610c13de';

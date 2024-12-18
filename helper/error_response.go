@@ -13,6 +13,7 @@ var (
 	ErrUserRegistration   = errors.New("user registration failed")
 	ErrLoginFailed        = errors.New("login failed ")
 	ErrNotFound           = errors.New("data not found")
+	ErrBadRequest         = errors.New("bad request")
 )
 
 func ErrResponse(ctx *fiber.Ctx, err error) error {
@@ -45,6 +46,12 @@ func ErrResponse(ctx *fiber.Ctx, err error) error {
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.WebResponse{
 			Code:   http.StatusInternalServerError,
 			Status: "Registration Failed",
+			Data:   err.Error(),
+		})
+	case errors.Is(err, ErrBadRequest):
+		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
+			Code:   http.StatusBadRequest,
+			Status: "Bad Request",
 			Data:   err.Error(),
 		})
 	case err != nil:
