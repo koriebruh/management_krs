@@ -5,7 +5,7 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "nim_dinus":"4cd489ef6697a6b3cdf790f8474ec443",
+  "nim_dinus":"0024fc24720ea15ae00c812a6eb8e866",
   "pass_mhs":"atur sendiri lah"
 }
 

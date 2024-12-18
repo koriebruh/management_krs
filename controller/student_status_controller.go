@@ -11,7 +11,7 @@ import (
 type StudentStatusController interface {
 	InformationStudent(ctx *fiber.Ctx) error
 	SetClassTime(ctx *fiber.Ctx) error
-	//GetAllKRSPick()
+	GetAllKRSPick(ctx *fiber.Ctx) error
 	//ExceptionInsertKRS()
 	//StatusKRS()
 
@@ -56,6 +56,23 @@ func (c StudentStatusControllerImpl) SetClassTime(ctx *fiber.Ctx) error {
 		Data: map[string]interface{}{
 			"message": "success update class",
 		},
+	})
+
+}
+
+func (c StudentStatusControllerImpl) GetAllKRSPick(ctx *fiber.Ctx) error {
+
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	pick, err := c.StudentStatusService.GetAllKRSPick(ctx.Context(), NimDinus)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   pick,
 	})
 
 }

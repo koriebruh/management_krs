@@ -32,12 +32,13 @@ func main() {
 
 	app.Get("/", hellobg)
 	app.Post("api/auth/register", authController.Register)
-	app.Post("api/auth/login", authController.Login)
+	app.Post("api/auth/login", authController.Login) //done
 	authorized := app.Group("/", conf.JWTAuthMiddleware)
 	authorized.Get("api/user", authController.CurrentAcc)
 
-	authorized.Get("api/students/status", studentStatusController.InformationStudent)
-	authorized.Put("api/students/class", studentStatusController.SetClassTime)
+	authorized.Get("api/students/status", studentStatusController.InformationStudent) //mapping data nya
+	authorized.Put("api/students/class", studentStatusController.SetClassTime)        // done
+	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)         // done
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {
