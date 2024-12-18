@@ -62,7 +62,7 @@ func (s StudentStatusRepositoryImpl) SetClassTime(ctx context.Context, db *gorm.
 	}
 
 	if CountKrsInsert > 0 {
-		return fmt.Errorf("anda sudah memanmbahkan data di krs sejumlah %v anda tidak bisa mengubah jenis kelas", CountKrsInsert)
+		return fmt.Errorf("you have added a total of %d Krs, you can't change the class type", CountKrsInsert)
 	}
 
 	if err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).

@@ -61,14 +61,14 @@ func (r UserRepositoryImpl) Login(ctx context.Context, db *gorm.DB, user domain.
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("login failed: Incorrect NimDinus and Password")
+			return nil, fmt.Errorf("nim_dinus un register")
 		}
-		return nil, fmt.Errorf("login failed: %v", err)
+		return nil, fmt.Errorf("incorrect nim_dinus and password")
 	}
 
 	// validation pass
 	if errPass := bcrypt.CompareHashAndPassword([]byte(result.PassMhs), []byte(user.PassMhs)); errPass != nil {
-		return nil, fmt.Errorf("login failed decrypt : %v", errPass)
+		return nil, fmt.Errorf("incorrect nim_dinus and password ")
 	}
 
 	return &result.NimDinus, nil
@@ -80,7 +80,7 @@ func (r UserRepositoryImpl) FindByNIM(ctx context.Context, db *gorm.DB, NIM stri
 
 	if err := db.WithContext(ctx).Where("nim_dinus = ?", NIM).First(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("NimDinus User Not found")
+			return nil, fmt.Errorf("nim_dinus un register")
 		}
 		return nil, fmt.Errorf(" Fail to get detail Current User %v", err)
 	}

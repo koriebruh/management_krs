@@ -50,13 +50,13 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 
 func (s StudentStatusServicesImpl) SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error {
 	if err := s.Validate.Struct(req); err != nil {
-		return fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
+		return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 	}
 
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		err := s.StudentStatusRepository.SetClassTime(ctx, tx, nimDinus, req.Kelas)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}
 
 		return nil

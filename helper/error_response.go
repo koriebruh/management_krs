@@ -5,60 +5,56 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"koriebruh/try/dto"
 	"net/http"
+	"strings"
 )
 
 var (
-	ErrValidationFailed   = errors.New("validation failed")
-	ErrPasswordEncryption = errors.New("password encryption failed")
-	ErrUserRegistration   = errors.New("user registration failed")
-	ErrLoginFailed        = errors.New("login failed ")
-	ErrNotFound           = errors.New("data not found")
-	ErrBadRequest         = errors.New("bad request")
+	ErrInternalServer = errors.New("INTERNAL SERVER ERROR")
+	ErrNotFound       = errors.New("NOT FOUND")
+	ErrBadRequest     = errors.New("BAD REQUEST")
 )
+
+func extractErrorMessage(err error) string {
+	parts := strings.SplitN(err.Error(), ": ", 2)
+	if len(parts) > 1 {
+		return parts[1]
+	}
+	return err.Error()
+}
 
 func ErrResponse(ctx *fiber.Ctx, err error) error {
 	switch {
-	case errors.Is(err, ErrValidationFailed):
-		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
-			Code:   http.StatusBadRequest,
-			Status: "Validation Error",
-			Data:   err.Error(),
-		})
-	case errors.Is(err, ErrLoginFailed):
-		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
-			Code:   http.StatusBadRequest,
-			Status: "Failed Login",
-			Data:   err.Error(),
+	case errors.Is(err, ErrInternalServer):
+		return ctx.Status(http.StatusInternalServerError).JSON(dto.WebResponse{
+			Code:   http.StatusInternalServerError,
+			Status: "INTERNAL SERVER ERROR",
+			Data: map[string]interface{}{
+				"error": extractErrorMessage(err),
+			},
 		})
 	case errors.Is(err, ErrNotFound):
-		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
-			Code:   http.StatusBadRequest,
-			Status: "Data not found",
-			Data:   err.Error(),
-		})
-	case errors.Is(err, ErrPasswordEncryption):
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.WebResponse{
-			Code:   http.StatusInternalServerError,
-			Status: "Password Encryption Error",
-			Data:   err.Error(),
-		})
-	case errors.Is(err, ErrUserRegistration):
-		return ctx.Status(http.StatusInternalServerError).JSON(dto.WebResponse{
-			Code:   http.StatusInternalServerError,
-			Status: "Registration Failed",
-			Data:   err.Error(),
+		return ctx.Status(http.StatusNotFound).JSON(dto.WebResponse{
+			Code:   http.StatusNotFound,
+			Status: "NOT FOUND",
+			Data: map[string]interface{}{
+				"error": extractErrorMessage(err),
+			},
 		})
 	case errors.Is(err, ErrBadRequest):
 		return ctx.Status(http.StatusBadRequest).JSON(dto.WebResponse{
 			Code:   http.StatusBadRequest,
-			Status: "Bad Request",
-			Data:   err.Error(),
+			Status: "BAD REQUEST",
+			Data: map[string]interface{}{
+				"error": extractErrorMessage(err),
+			},
 		})
 	case err != nil:
 		return ctx.Status(http.StatusInternalServerError).JSON(dto.WebResponse{
 			Code:   http.StatusInternalServerError,
-			Status: "Internal Server Error",
-			Data:   err.Error(),
+			Status: "INTERNAL SERVER ERROR 2",
+			Data: map[string]interface{}{
+				"error": extractErrorMessage(err),
+			},
 		})
 	}
 	return nil

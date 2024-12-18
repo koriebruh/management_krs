@@ -34,7 +34,7 @@ func NewAuthService(userRepository repository.UserRepository, DB *gorm.DB, valid
 
 func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq) error {
 	if err := service.Validate.Struct(req); err != nil {
-		return fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
+		return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 	}
 
 	return service.DB.Transaction(func(tx *gorm.DB) error {
@@ -42,7 +42,7 @@ func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq
 
 		password, err := bcrypt.GenerateFromPassword([]byte(req.PassMhs), bcrypt.DefaultCost)
 		if err != nil {
-			return fmt.Errorf("%w: %v", helper.ErrPasswordEncryption, err)
+			return fmt.Errorf("%w: %v", helper.ErrInternalServer, err)
 		}
 		req.PassMhs = string(password)
 
@@ -56,7 +56,7 @@ func (service AuthServiceImpl) Register(ctx context.Context, req dto.RegisterReq
 		}
 
 		if err = service.UserRepository.Register(ctx, tx, registerData); err != nil {
-			return fmt.Errorf("%w: %v", helper.ErrUserRegistration, err)
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}
 
 		return nil
@@ -67,7 +67,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 	var userNIM string
 
 	if err := service.Validate.Struct(req); err != nil {
-		return userNIM, fmt.Errorf("%w: %v", helper.ErrValidationFailed, err)
+		return userNIM, fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 	}
 
 	err := service.DB.Transaction(func(tx *gorm.DB) error {
@@ -78,7 +78,7 @@ func (service AuthServiceImpl) Login(ctx context.Context, req dto.LoginReq) (str
 
 		result, err := service.UserRepository.Login(ctx, tx, loginData)
 		if err != nil {
-			return fmt.Errorf("%w: %v", helper.ErrLoginFailed, err)
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}
 		userNIM = *result
 
