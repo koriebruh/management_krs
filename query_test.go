@@ -1,0 +1,44 @@
+package main
+
+import (
+	"fmt"
+	"koriebruh/try/conf"
+	"koriebruh/try/domain"
+	"log"
+	"testing"
+)
+
+func TestQueryFindALlKrsPicked(t *testing.T) {
+	db := conf.InitDB()
+
+	var results []struct {
+		NamaMatkul   string
+		NamaMatkulEN string
+		Tipe         string
+		Semester     int
+		JenisMatkul  string
+		Hari1        string
+		Hari2        string
+		Hari3        string
+	}
+
+	nim_dinus := "1a4421a533b58bb95212ca38610c13de"
+	err := db.Model(&domain.KrsRecord{}).
+		Select("matkul_kurikulum.nmmk AS nama_matkul, matkul_kurikulum.nmen AS nama_matkul_en, matkul_kurikulum.tp AS tipe, matkul_kurikulum.smt AS semester, matkul_kurikulum.jenis_matkul AS jenis_matkul, hari1.nama AS hari1, hari2.nama AS hari2, hari3.nama AS hari3").
+		Joins("JOIN matkul_kurikulum ON matkul_kurikulum.kdmk = krs_record.kdmk").
+		Joins("JOIN jadwal_tawar ON jadwal_tawar.id = krs_record.id_jadwal").
+		Joins("LEFT JOIN hari AS hari1 ON hari1.id = jadwal_tawar.id_hari1").
+		Joins("LEFT JOIN hari AS hari2 ON hari2.id = jadwal_tawar.id_hari2").
+		Joins("LEFT JOIN hari AS hari3 ON hari3.id = jadwal_tawar.id_hari3").
+		Where("krs_record.nim_dinus = ?", nim_dinus).
+		Scan(&results).Error
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, result := range results {
+		fmt.Printf("NamaMatkul: %s, Hari1: %s, Hari2: %s, Hari3: %s\n",
+			result.NamaMatkul, result.Hari1, result.Hari2, result.Hari3)
+	}
+}

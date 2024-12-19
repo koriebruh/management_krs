@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"koriebruh/try/domain"
+	"koriebruh/try/dto"
 	"koriebruh/try/req_db"
 )
 
 type StudentStatusRepository interface {
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
-	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]domain.KrsRecord, error)
+	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 
 	//ExceptionInsertKRS(ctx context.Context, db *gorm.DB)
 	//StatusKRS(ctx context.Context, db *gorm.DB)
@@ -75,24 +76,27 @@ func (s StudentStatusRepositoryImpl) SetClassTime(ctx context.Context, db *gorm.
 	return nil
 }
 
-func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]domain.KrsRecord, error) {
+func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error) {
 
 	//FIND mahasiswa dinus where akdm stat 1
 	//AMBIL JADWAL TAWAR WHERE KDMK = xx
 
-	var krsList []domain.KrsRecord
+	var results []dto.SelectedKrs
 
-	err := db.Preload("TahunAjaran").
-		Preload("MataKuliah").
-		Preload("Jadwal").
-		Preload("Mahasiswa").
-		Where("nim_dinus = ?", nimDinus).
-		Find(&krsList).Error
+	err := db.Model(&domain.KrsRecord{}).
+		Select("matkul_kurikulum.nmmk AS nama_matkul, matkul_kurikulum.nmen AS nama_matkul_en, matkul_kurikulum.tp AS tipe, matkul_kurikulum.smt AS semester, matkul_kurikulum.jenis_matkul AS jenis_matkul, hari1.nama AS hari1, hari2.nama AS hari2, hari3.nama AS hari3").
+		Joins("JOIN matkul_kurikulum ON matkul_kurikulum.kdmk = krs_record.kdmk").
+		Joins("JOIN jadwal_tawar ON jadwal_tawar.id = krs_record.id_jadwal").
+		Joins("LEFT JOIN hari AS hari1 ON hari1.id = jadwal_tawar.id_hari1").
+		Joins("LEFT JOIN hari AS hari2 ON hari2.id = jadwal_tawar.id_hari2").
+		Joins("LEFT JOIN hari AS hari3 ON hari3.id = jadwal_tawar.id_hari3").
+		Where("krs_record.nim_dinus = ?", nimDinus).
+		Scan(&results).Error
 
 	if err != nil {
 		fmt.Println("Error querying database:", err)
 		return nil, fmt.Errorf("failed to get KRS data: %w", err)
 	}
 
-	return krsList, nil
+	return results, nil
 }
