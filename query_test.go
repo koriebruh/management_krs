@@ -8,6 +8,51 @@ import (
 	"testing"
 )
 
+func TestQueryStatusMhs(t *testing.T) {
+	db := conf.InitDB()
+	var results []struct {
+		NimDinus     string
+		TaMasuk      int
+		Prodi        string
+		AkdmStat     int
+		DateReg      string
+		SppBayar     int
+		SppStatus    int
+		SppTransaksi string
+		Kelas        string
+	}
+
+	nim := "262019ecd15e0169f7efdea9a64ad30e"
+
+	err := db.Model(&domain.MahasiswaDinus{}).
+		Select("mahasiswa_dinus.nim_dinus, mahasiswa_dinus.ta_masuk, mahasiswa_dinus.prodi, mahasiswa_dinus.akdm_stat, mahasiswa_dinus.kelas, herregist_mahasiswa.date_reg, tagihan_mhs.spp_bayar, tagihan_mhs.spp_status, tagihan_mhs.spp_transaksi").
+		Joins("JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus").
+		Joins("JOIN krs_management.tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
+		Where("mahasiswa_dinus.nim_dinus = ?", nim).
+		Scan(&results).Error
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Print results
+	for _, result := range results {
+		fmt.Printf(
+			"NimDinus: %s, TA Masuk: %d, Prodi: %s, Status Akademik: %v, DateReg: %s, SPP Bayar: %v, SPP Status: %v, SPP Transaksi: %s, Kelas%v \n",
+			result.NimDinus,
+			result.TaMasuk,
+			result.Prodi,
+			result.AkdmStat,
+			result.DateReg,
+			result.SppBayar,
+			result.SppStatus,
+			result.SppTransaksi,
+			result.Kelas,
+		)
+	}
+
+}
+
 func TestQueryFindALlKrsPicked(t *testing.T) {
 	db := conf.InitDB()
 

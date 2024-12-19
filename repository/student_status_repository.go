@@ -6,11 +6,11 @@ import (
 	"gorm.io/gorm"
 	"koriebruh/try/domain"
 	"koriebruh/try/dto"
-	"koriebruh/try/req_db"
 )
 
 type StudentStatusRepository interface {
-	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error)
+	CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) error
+	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 
@@ -25,31 +25,29 @@ func NewStudentStatusRepository() *StudentStatusRepositoryImpl {
 	return &StudentStatusRepositoryImpl{}
 }
 
-func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*req_db.InformationStudent, error) {
-	var studentStatus req_db.InformationStudent
-
-	var Mhs domain.MahasiswaDinus
-	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&Mhs).Error; err != nil {
-		return nil, fmt.Errorf("error find where nim := %v and err is %e", nimDinus, err)
+func (s StudentStatusRepositoryImpl) CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) error {
+	if err := db.WithContext(ctx).Where("nim_dinus =?", nimDinus).First(domain.MahasiswaDinus{}).Error; err != nil {
+		return fmt.Errorf("error %v not found", nimDinus)
 	}
 
-	var Heregis domain.HerregistMahasiswa
-	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&Heregis).Error; err != nil {
-		return nil, fmt.Errorf("error find herregis where nim := %v and err is %e", nimDinus, err)
+	return nil
+}
+
+func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error) {
+	var studentStatus dto.InfoStudentDB
+
+	err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).
+		Select("mahasiswa_dinus.nim_dinus, mahasiswa_dinus.ta_masuk, mahasiswa_dinus.prodi, mahasiswa_dinus.akdm_stat, mahasiswa_dinus.kelas, herregist_mahasiswa.date_reg, tagihan_mhs.spp_bayar, tagihan_mhs.spp_status, tagihan_mhs.spp_transaksi").
+		Joins("JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus").
+		Joins("JOIN krs_management.tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
+		Where("mahasiswa_dinus.nim_dinus = ?", nimDinus).
+		Scan(&studentStatus).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get status user %v", nimDinus)
 	}
 
-	var Tagihan []domain.TagihanMhs
-	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).Find(&Tagihan).Error; err != nil {
-		return nil, fmt.Errorf("error find tagihan  where nim := %v and err is %e", nimDinus, err)
-	}
-
-	//MAPING
-	studentStatus = req_db.InformationStudent{
-		MahasiswaDinus:     Mhs,
-		HerregistMahasiswa: Heregis,
-		TagihanMahasiswa:   Tagihan,
-	}
-
+	fmt.Println(studentStatus)
 	return &studentStatus, nil
 }
 
@@ -83,7 +81,7 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 
 	var results []dto.SelectedKrs
 
-	err := db.Model(&domain.KrsRecord{}).
+	err := db.WithContext(ctx).Model(&domain.KrsRecord{}).
 		Select("matkul_kurikulum.nmmk AS nama_matkul, matkul_kurikulum.nmen AS nama_matkul_en, matkul_kurikulum.tp AS tipe, matkul_kurikulum.smt AS semester, matkul_kurikulum.jenis_matkul AS jenis_matkul, hari1.nama AS hari1, hari2.nama AS hari2, hari3.nama AS hari3").
 		Joins("JOIN matkul_kurikulum ON matkul_kurikulum.kdmk = krs_record.kdmk").
 		Joins("JOIN jadwal_tawar ON jadwal_tawar.id = krs_record.id_jadwal").

@@ -110,3 +110,19 @@ ALTER TABLE `matkul_kurikulum`
 
 desc krs_record_log;
 ALTER TABLE krs_record_log RENAME COLUMN lastUpdate TO last_update;
+
+
+select * from mahasiswa_dinus where nim_dinus = '1a4421a533b58bb95212ca38610c13de';
+
+select * from herregist_mahasiswa;
+
+SELECT mahasiswa_dinus.nim_dinus, mahasiswa_dinus.ta_masuk, mahasiswa_dinus.prodi, mahasiswa_dinus.akdm_stat, mahasiswa_dinus.kelas, herregist_mahasiswa.date_reg, tagihan_mhs.spp_bayar, tagihan_mhs.spp_status, tagihan_mhs.spp_transaksi
+FROM mahasiswa_dinus
+         JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus
+         JOIN krs_management.tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus
+WHERE mahasiswa_dinus.nim_dinus = '006f92df0e8baf555ce525162f681678';
+
+SELECT DISTINCT md.nim_dinus
+FROM mahasiswa_dinus md
+         JOIN herregist_mahasiswa hm ON md.nim_dinus = hm.nim_dinus
+         JOIN krs_management.tagihan_mhs tm ON hm.nim_dinus = tm.nim_dinus;
