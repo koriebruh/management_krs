@@ -16,7 +16,7 @@ type StudentStatusService interface {
 	SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
-	//StatusKRS()
+	StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error)
 }
 type StudentStatusServicesImpl struct {
 	*gorm.DB
@@ -168,5 +168,25 @@ func (s StudentStatusServicesImpl) InsertKRSPermit(ctx context.Context, nimDinus
 	}
 
 	return "allowed insert krs", nil
+
+}
+
+func (s StudentStatusServicesImpl) StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error) {
+	var result dto.StatusKrsRes
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		krsStatus, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+		result = krsStatus
+		return nil
+	})
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 
 }

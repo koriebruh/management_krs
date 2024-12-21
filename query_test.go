@@ -104,6 +104,67 @@ func TestQueryFindALlKrsPicked(t *testing.T) {
 	}
 }
 
-func TestName(t *testing.T) {
+func TestStatusKRS(t *testing.T) {
+	db := conf.InitDB()
+	ctx := context.Background()
+	nimDinus := "33f5cda80c5f2fc0bdb865cceb51550c"
 
+	// Struct untuk menyimpan hasil akhir
+	var Data struct {
+		Validate    string
+		TahunAjaran string
+		Dipaketkan  string
+		TahunMasuk  string
+		Sks         int
+		Ips         string
+	}
+
+	var validasi string
+	err := db.WithContext(ctx).Model(&domain.ValidasiKrsMhs{}).
+		Select("CASE WHEN job_date <= NOW() THEN 'Validated' ELSE 'Not Validated' END AS validation_status").
+		Where("nim_dinus = ?", nimDinus).
+		First(&validasi).Error
+	if err != nil {
+		log.Fatalf("Error fetching validation status: %v", err)
+	}
+
+	// Query apakah mahasiswa di-paketkan
+	var diPaketkanKah domain.MhsDipaketkan
+	if err = db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&diPaketkanKah).Error; err != nil {
+		Data.Dipaketkan = "tidak di paketkan"
+	} else {
+		Data.Dipaketkan = "dipaketkan"
+	}
+
+	// Query informasi IP semester dan tahun masuk
+	var ipSemester struct {
+		TahunAjaran string
+		Sks         int
+		Ips         string
+		TahunMasuk  string
+	}
+	err = db.WithContext(ctx).Raw(`
+		SELECT
+			ip_s.ta AS tahun_ajaran,
+			ip_s.sks,
+			ip_s.ips,
+			md.ta_masuk AS tahun_masuk
+		FROM ip_semester ip_s
+		JOIN mahasiswa_dinus md ON ip_s.nim_dinus = md.nim_dinus
+		WHERE ip_s.nim_dinus = ?
+		LIMIT 1
+	`, nimDinus).Scan(&ipSemester).Error
+	if err != nil {
+		log.Fatalf("Error fetching IP semester: %v", err)
+	}
+
+	// Mengisi data akhir
+	Data.Validate = validasi
+	Data.TahunAjaran = ipSemester.TahunAjaran
+	Data.TahunMasuk = ipSemester.TahunMasuk
+	Data.Sks = ipSemester.Sks
+	Data.Ips = ipSemester.Ips
+
+	// Output hasil akhir
+	fmt.Printf("Final Data: %+v\n", Data)
 }

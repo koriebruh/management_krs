@@ -13,8 +13,7 @@ type StudentStatusController interface {
 	SetClassTime(ctx *fiber.Ctx) error
 	GetAllKRSPick(ctx *fiber.Ctx) error
 	InsertKRSPermit(ctx *fiber.Ctx) error
-	//StatusKRS()
-
+	StatusKRS(ctx *fiber.Ctx) error
 }
 type StudentStatusControllerImpl struct {
 	service.StudentStatusService
@@ -91,6 +90,22 @@ func (c StudentStatusControllerImpl) InsertKRSPermit(ctx *fiber.Ctx) error {
 		Data: map[string]interface{}{
 			"message": permit,
 		},
+	})
+
+}
+
+func (c StudentStatusControllerImpl) StatusKRS(ctx *fiber.Ctx) error {
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	krsStatus, err := c.StudentStatusService.StatusKRS(ctx.Context(), NimDinus)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   krsStatus,
 	})
 
 }

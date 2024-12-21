@@ -14,7 +14,7 @@ type StudentStatusRepository interface {
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error)
-	//StatusKRS(ctx context.Context, db *gorm.DB)
+	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error)
 }
 
 type StudentStatusRepositoryImpl struct {
@@ -111,4 +111,59 @@ func (s StudentStatusRepositoryImpl) InsertKRSPermit(ctx context.Context, db *go
 	}
 
 	return true, nil
+}
+
+func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error) {
+	var status dto.StatusKrsRes
+
+	//CHECK VALDASI DULU
+	var validasi string
+	err := db.WithContext(ctx).Model(&domain.ValidasiKrsMhs{}).
+		Select("CASE WHEN job_date <= NOW() THEN 'Validated' ELSE 'Not Validated' END AS validation_status").
+		Where("nim_dinus = ?", nimDinus).
+		First(&validasi).Error
+	if err != nil {
+		return status, fmt.Errorf("error %v not validate", nimDinus)
+	}
+
+	//CHECK DI PAKETKAN ATAU TIDAK
+	var diPaketkanKah domain.MhsDipaketkan
+	var paket string
+	if err = db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&diPaketkanKah).Error; err != nil {
+		paket = "tidak di paketkan"
+	} else {
+		paket = "dipaketkan"
+	}
+
+	//AMBIL DATA YG DI PERLUKAN
+	var IpSemester struct {
+		TahunAjaran string
+		Sks         int
+		Ips         string
+		TahunMasuk  string
+	}
+	if err = db.WithContext(ctx).Raw(`
+		SELECT
+			ip_s.ta AS tahun_ajaran,
+			ip_s.sks,
+			ip_s.ips,
+			md.ta_masuk AS tahun_masuk
+		FROM ip_semester ip_s
+		JOIN mahasiswa_dinus md ON ip_s.nim_dinus = md.nim_dinus
+		WHERE ip_s.nim_dinus = ?
+		LIMIT 1
+	`, nimDinus).Scan(&IpSemester).Error; err != nil {
+		return status, fmt.Errorf("error %v get data", nimDinus)
+	}
+	status = dto.StatusKrsRes{
+		Validate:    validasi,
+		Dipaketkan:  paket,
+		TahunAjaran: IpSemester.TahunAjaran,
+		TahunMasuk:  IpSemester.TahunMasuk,
+		Sks:         IpSemester.Sks,
+		Ips:         IpSemester.Ips,
+	}
+
+	return status, nil
+
 }

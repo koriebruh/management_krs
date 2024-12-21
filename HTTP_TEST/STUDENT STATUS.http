@@ -5,9 +5,10 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "nim_dinus":"6f41ddf2e566f37089dd0e2f5fdbeca1",
-  "pass_mhs":"atur sendiri lah"
+  "nim_dinus": "6f41ddf2e566f37089dd0e2f5fdbeca1",
+  "pass_mhs": "atur sendiri lah"
 }
+
 
 
 ### TEST STATUS STUDENT (gunakan nim_dinus ini = 006f92df0e8baf555ce525162f681678 )
@@ -15,6 +16,7 @@ GET http://localhost:3000/api/students/status
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MjA0MH0.DUymuZYOZNSDOSn2B6doZGHprShHIwVMMdPxfpTZUfk
+
 
 ### TEST STATUS STUDENT
 PUT http://localhost:3000/api/students/class
@@ -26,14 +28,24 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y
   "kelas": 100
 }
 
+
 ### CEK KELAS YG DI AMBIL
 GET http://localhost:3000/api/students/krs
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MTk2N30.i_yE-KwKGRg08umNP0adKLoDsHWu-Ftuy25i0jgzdi8
 
+
 ### cek ijin krs (use nim ini := 6f41ddf2e566f37089dd0e2f5fdbeca1)
 GET http://localhost:3000/api/students/permit
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MTk2N30.i_yE-KwKGRg08umNP0adKLoDsHWu-Ftuy25i0jgzdi8
+
+
+### cek krs status
+GET http://localhost:3000/api/students/krs-status
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MTk2N30.i_yE-KwKGRg08umNP0adKLoDsHWu-Ftuy25i0jgzdi8
+

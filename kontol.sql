@@ -132,3 +132,25 @@ FROM mahasiswa_dinus md
 ;
 
 
+select * from validasi_krs_mhs;
+select * from mhs_dipaketkan;
+select * from ip_semester;
+
+SELECT *,
+       CASE
+           WHEN job_date <= NOW() THEN 'Validated'
+           ELSE 'Not Validated'
+           END AS validation_status
+FROM validasi_krs_mhs;
+
+# ta
+# ketika ada di mhs di paketkan berarti sudah di paketkan
+# sks, ips
+select * from ip_semester;
+
+select ip_s.ta,
+       ip_s.sks,
+       ip_s.ips,
+       md.ta_masuk
+from ip_semester ip_s  join mahasiswa_dinus md where ip_s.nim_dinus = 'cc9d8a25e4226f36a0e6f30abe3420f1'
+
