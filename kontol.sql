@@ -186,3 +186,7 @@ WHERE
 
 desc tahun_ajaran;
 desc sesi_kuliah;
+
+select * from jadwal_input_krs where prodi = 'D22';
+
+select * from  mhs_ijin_krs where nim_dinus = '6f41ddf2e566f37089dd0e2f5fdbeca1'

@@ -36,8 +36,9 @@ func main() {
 	authorized := app.Group("/", conf.JWTAuthMiddleware)
 	authorized.Get("api/user", authController.CurrentAcc)
 
-	authorized.Get("api/students/krs-offers", studentStatusController.KrsOffers)
-	authorized.Get("api/students/status", studentStatusController.InformationStudent) //\done
+	authorized.Get("api/students/krs-offers", studentStatusController.KrsOffers)      // done
+	authorized.Get("api/students/krs-schedule", studentStatusController.KrsSchedule)  // done
+	authorized.Get("api/students/status", studentStatusController.InformationStudent) //done
 	authorized.Put("api/students/class", studentStatusController.SetClassTime)        // done
 	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)         // done
 	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)    // done

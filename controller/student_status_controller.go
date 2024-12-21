@@ -10,6 +10,7 @@ import (
 
 type StudentStatusController interface {
 	KrsOffers(ctx *fiber.Ctx) error
+	KrsSchedule(ctx *fiber.Ctx) error
 	InformationStudent(ctx *fiber.Ctx) error
 	SetClassTime(ctx *fiber.Ctx) error
 	GetAllKRSPick(ctx *fiber.Ctx) error
@@ -35,6 +36,21 @@ func (c StudentStatusControllerImpl) KrsOffers(ctx *fiber.Ctx) error {
 		Code:   http.StatusOK,
 		Status: "OK",
 		Data:   offers,
+	})
+}
+
+func (c StudentStatusControllerImpl) KrsSchedule(ctx *fiber.Ctx) error {
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	schedule, err := c.StudentStatusService.KrsSchedule(ctx.Context(), NimDinus)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   schedule,
 	})
 }
 

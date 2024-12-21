@@ -215,3 +215,31 @@ func TestQueryTawaran(t *testing.T) {
 		fmt.Printf("Data: %+v\n", row)
 	}
 }
+
+func TestJadwalInput(t *testing.T) {
+	db := conf.InitDB()
+	var user domain.MahasiswaDinus
+	nimDinus := "1a4421a533b58bb95212ca38610c13de"
+	if err := db.Where("nim_dinus = ?", nimDinus).First(&user).Error; err != nil {
+		panic(err)
+	}
+
+	var jadwal domain.JadwalInputKrs
+	if err := db.Where("prodi = ?", user.Prodi).First(&jadwal).Error; err != nil {
+		panic(err)
+	}
+
+	result := struct {
+		TA         int
+		Prodi      string
+		TglMulai   string
+		TglSelesai string
+	}{
+		TA:         jadwal.TA,
+		Prodi:      jadwal.Prodi,
+		TglMulai:   jadwal.TglMulai.Format("2006-01-02 15:04:05"),
+		TglSelesai: jadwal.TglSelesai.Format("2006-01-02 15:04:05"),
+	}
+
+	fmt.Println(result)
+}

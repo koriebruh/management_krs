@@ -13,6 +13,7 @@ import (
 
 type StudentStatusService interface {
 	KrsOffers(ctx context.Context, kodeTA string) ([]dto.KrsOfferRes, error)
+	KrsSchedule(ctx context.Context, nimMhs string) (dto.KrsScheduleRes, error)
 	InformationStudent(ctx context.Context, NimMhs string) (dto.InfoStudentRes, error)
 	SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
@@ -35,6 +36,37 @@ func (s StudentStatusServicesImpl) KrsOffers(ctx context.Context, kodeTA string)
 		return nil, fmt.Errorf("%w: %v", helper.ErrNotFound, err)
 	}
 	return KrsListOffers, nil
+}
+
+func (s StudentStatusServicesImpl) KrsSchedule(ctx context.Context, nimMhs string) (dto.KrsScheduleRes, error) {
+	var result dto.KrsScheduleRes
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		exist, err := s.StudentStatusRepository.CheckUserExist(ctx, tx, nimMhs)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		schedule, err := s.StudentStatusRepository.KrsSchedule(ctx, tx, exist.Prodi)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		result = dto.KrsScheduleRes{
+			TA:         schedule.TA,
+			Prodi:      schedule.Prodi,
+			TglMulai:   schedule.TglMulai.Format("2006-01-02 15:04:05"),
+			TglSelesai: schedule.TglSelesai.Format("2006-01-02 15:04:05"),
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return dto.KrsScheduleRes{}, err
+	}
+
+	return result, nil
+
 }
 
 func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMhs string) (dto.InfoStudentRes, error) {

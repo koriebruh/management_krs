@@ -10,6 +10,7 @@ import (
 
 type StudentStatusRepository interface {
 	KrsOffers(ctx context.Context, db *gorm.DB, kodeTA string) ([]dto.KrsOfferRes, error)
+	KrsSchedule(ctx context.Context, db *gorm.DB, prodi string) (domain.JadwalInputKrs, error)
 	CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error)
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
@@ -53,6 +54,15 @@ func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB,
 	}
 
 	return krsOffers, nil
+}
+
+func (s StudentStatusRepositoryImpl) KrsSchedule(ctx context.Context, db *gorm.DB, prodi string) (domain.JadwalInputKrs, error) {
+	var jadwal domain.JadwalInputKrs
+	if err := db.Where("prodi = ?", prodi).First(&jadwal).Error; err != nil {
+		return domain.JadwalInputKrs{}, fmt.Errorf("failed to get jadwal where prodi %v", prodi)
+	}
+
+	return jadwal, nil
 }
 
 func (s StudentStatusRepositoryImpl) CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error) {
