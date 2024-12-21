@@ -5,19 +5,19 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "nim_dinus":"0024fc24720ea15ae00c812a6eb8e866",
+  "nim_dinus":"6f41ddf2e566f37089dd0e2f5fdbeca1",
   "pass_mhs":"atur sendiri lah"
 }
 
 
 ### TEST STATUS STUDENT (gunakan nim_dinus ini = 006f92df0e8baf555ce525162f681678 )
-GET https://localhost:3000/api/students/status
+GET http://localhost:3000/api/students/status
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearere yJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y2Q0ODllZjY2OTdhNmIzY2RmNzkwZjg0NzRlYzQ0MyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ1NTgzMn0.NRXsS2zjgkgDiWauRVynA6bG_YSPrEfObAQaChGWulA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MjA0MH0.DUymuZYOZNSDOSn2B6doZGHprShHIwVMMdPxfpTZUfk
 
 ### TEST STATUS STUDENT
-PUT https://localhost:3000/api/students/class
+PUT http://localhost:3000/api/students/class
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y2Q0ODllZjY2OTdhNmIzY2RmNzkwZjg0NzRlYzQ0MyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ1NTgzMn0.NRXsS2zjgkgDiWauRVynA6bG_YSPrEfObAQaChGWulA
@@ -27,7 +27,13 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y
 }
 
 ### CEK KELAS YG DI AMBIL
-PUT https://localhost:3000/api/students/class
+GET http://localhost:3000/api/students/krs
 Accept: application/json
 Content-Type: application/json
-Authorization: Bearer
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MTk2N30.i_yE-KwKGRg08umNP0adKLoDsHWu-Ftuy25i0jgzdi8
+
+### cek ijin krs (use nim ini := 6f41ddf2e566f37089dd0e2f5fdbeca1)
+GET http://localhost:3000/api/students/permit
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc0MTk2N30.i_yE-KwKGRg08umNP0adKLoDsHWu-Ftuy25i0jgzdi8

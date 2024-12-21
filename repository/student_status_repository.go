@@ -13,8 +13,7 @@ type StudentStatusRepository interface {
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
-
-	//ExceptionInsertKRS(ctx context.Context, db *gorm.DB)
+	InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error)
 	//StatusKRS(ctx context.Context, db *gorm.DB)
 }
 
@@ -98,4 +97,18 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 	}
 
 	return results, nil
+}
+
+func (s StudentStatusRepositoryImpl) InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error) {
+
+	var ijinKrs domain.MhsIjinKrs
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&ijinKrs).Error; err != nil {
+		return false, fmt.Errorf("error cant get permit status where nim")
+	}
+
+	if ijinKrs.Ijinkan == false {
+		return false, nil
+	}
+
+	return true, nil
 }

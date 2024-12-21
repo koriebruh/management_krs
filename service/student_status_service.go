@@ -15,7 +15,7 @@ type StudentStatusService interface {
 	InformationStudent(ctx context.Context, NimMhs string) (dto.InfoStudentRes, error)
 	SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
-	//ExceptionInsertKRS()
+	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
 	//StatusKRS()
 }
 type StudentStatusServicesImpl struct {
@@ -155,4 +155,18 @@ func (s StudentStatusServicesImpl) GetAllKRSPick(ctx context.Context, nimDinus s
 	}
 
 	return results, nil
+}
+
+func (s StudentStatusServicesImpl) InsertKRSPermit(ctx context.Context, nimDinus string) (string, error) {
+	permit, err := s.StudentStatusRepository.InsertKRSPermit(ctx, s.DB, nimDinus)
+	if err != nil {
+		return "", fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+	}
+
+	if permit == false {
+		return "not allowed insert krs", nil
+	}
+
+	return "allowed insert krs", nil
+
 }

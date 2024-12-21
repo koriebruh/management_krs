@@ -126,3 +126,5 @@ SELECT DISTINCT md.nim_dinus
 FROM mahasiswa_dinus md
          JOIN herregist_mahasiswa hm ON md.nim_dinus = hm.nim_dinus
          JOIN krs_management.tagihan_mhs tm ON hm.nim_dinus = tm.nim_dinus;
+
+select * from mhs_ijin_krs;

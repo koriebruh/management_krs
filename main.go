@@ -39,6 +39,7 @@ func main() {
 	authorized.Get("api/students/status", studentStatusController.InformationStudent) //mapping data nya
 	authorized.Put("api/students/class", studentStatusController.SetClassTime)        // done
 	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)         // done
+	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)    // done
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {
