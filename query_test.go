@@ -168,3 +168,50 @@ func TestStatusKRS(t *testing.T) {
 	// Output hasil akhir
 	fmt.Printf("Final Data: %+v\n", Data)
 }
+
+type JadwalTawaran struct {
+	TahunAjaran int    `gorm:"column:tahun_ajaran"`
+	Kelompok    string `gorm:"column:kelompok"`
+	Matakuliah  string `gorm:"column:nama_mata_kuliah"`
+	Sks         int    `gorm:"column:jumlah_sks"`
+	Hari        string `gorm:"column:hari"`
+	JamMulai    string `gorm:"column:jam_mulai"`
+	JamSelesai  string `gorm:"column:jam_selesai"`
+	Ruang       string `gorm:"column:ruang"`
+}
+
+func TestQueryTawaran(t *testing.T) {
+	db := conf.InitDB()
+
+	var result []JadwalTawaran
+	tahunAjaran := "20232"
+
+	err := db.Raw(`
+		SELECT
+			jt.ta AS tahun_ajaran,
+			jt.klpk AS kelompok,
+			mk.nmmk AS nama_mata_kuliah,
+			mk.sks AS jumlah_sks,
+			h.nama AS hari,
+			sk.jam_mulai,
+			sk.jam_selesai,
+			r.nama AS ruang
+		FROM jadwal_tawar jt
+			JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+			JOIN hari h ON jt.id_hari1 = h.id
+			JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
+			JOIN ruang r ON jt.id_ruang1 = r.id
+		WHERE
+			mk.kur_aktif = 1 AND
+			jt.ta = ?;
+	`, tahunAjaran).Scan(&result).Error
+
+	if err != nil {
+		t.Fatalf("Gagal menjalankan query: %v", err)
+	}
+
+	// Debug output hasil query
+	for _, row := range result {
+		fmt.Printf("Data: %+v\n", row)
+	}
+}

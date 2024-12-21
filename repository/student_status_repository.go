@@ -9,6 +9,7 @@ import (
 )
 
 type StudentStatusRepository interface {
+	KrsOffers(ctx context.Context, db *gorm.DB, kodeTA string) ([]dto.KrsOfferRes, error)
 	CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error)
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
@@ -22,6 +23,36 @@ type StudentStatusRepositoryImpl struct {
 
 func NewStudentStatusRepository() *StudentStatusRepositoryImpl {
 	return &StudentStatusRepositoryImpl{}
+}
+
+func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB, kodeTA string) ([]dto.KrsOfferRes, error) {
+	var krsOffers []dto.KrsOfferRes
+
+	err := db.Raw(`
+		SELECT
+			jt.ta AS tahun_ajaran,
+			jt.klpk AS kelompok,
+			mk.nmmk AS nama_mata_kuliah,
+			mk.sks AS jumlah_sks,
+			h.nama AS hari,
+			sk.jam_mulai,
+			sk.jam_selesai,
+			r.nama AS ruang
+		FROM jadwal_tawar jt
+			JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+			JOIN hari h ON jt.id_hari1 = h.id
+			JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
+			JOIN ruang r ON jt.id_ruang1 = r.id
+		WHERE
+			mk.kur_aktif = 1 AND
+			jt.ta = ?;
+	`, kodeTA).Scan(&krsOffers).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("error kode Tahun Ajar %v not found", kodeTA)
+	}
+
+	return krsOffers, nil
 }
 
 func (s StudentStatusRepositoryImpl) CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error) {

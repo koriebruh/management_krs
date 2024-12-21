@@ -1,0 +1,38 @@
+### REGISTER
+#POST http://localhost:3000/api/auth/register
+#Accept: application/json
+#Content-Type: application/json
+#
+#{
+#  "nim_dinus":"a11.2022.14616",
+#  "ta_masuk":2022,
+#  "prodi":"TI",
+#  "pass_mhs":"jamal123",
+#  "kelas": 1,
+#  "akdm_stat": "1"
+#}
+
+
+### LOGIN
+POST http://localhost:3000/api/auth/login
+Accept: application/json
+Content-Type: application/json
+
+{
+  "nim_dinus":"d263aa7f29800ba04bc6e8ad674b58cd",
+  "pass_mhs":"atur sendiri lah"
+}
+
+#### CURRENT USER
+#GET http://localhost:3000/api/user
+#Accept: application/json
+#Content-Type: application/json
+#Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiJkMjYzYWE3ZjI5ODAwYmEwNGJjNmU4YWQ2NzRiNThjZCIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDUwMTYxOX0.4EZJ-tMNmgfjPizi0DeavmjPqt0umGLabXBZSf4l5e0
+
+### tawaran krs
+GET http://localhost:3000/api/students/krs-offers?kode-ta=20232
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiJkMjYzYWE3ZjI5ODAwYmEwNGJjNmU4YWQ2NzRiNThjZCIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc2NTI3OH0.JPGuKAx_YHjMxhq_BuzbSoEmfvfT0CrVMRauIziBwjI
+
+

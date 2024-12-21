@@ -9,6 +9,7 @@ import (
 )
 
 type StudentStatusController interface {
+	KrsOffers(ctx *fiber.Ctx) error
 	InformationStudent(ctx *fiber.Ctx) error
 	SetClassTime(ctx *fiber.Ctx) error
 	GetAllKRSPick(ctx *fiber.Ctx) error
@@ -21,6 +22,20 @@ type StudentStatusControllerImpl struct {
 
 func NewStudentStatusController(studentStatusService service.StudentStatusService) *StudentStatusControllerImpl {
 	return &StudentStatusControllerImpl{StudentStatusService: studentStatusService}
+}
+
+func (c StudentStatusControllerImpl) KrsOffers(ctx *fiber.Ctx) error {
+	kodeTA := ctx.Query("kode-ta")
+	offers, err := c.StudentStatusService.KrsOffers(ctx.Context(), kodeTA)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   offers,
+	})
 }
 
 func (c StudentStatusControllerImpl) InformationStudent(ctx *fiber.Ctx) error {

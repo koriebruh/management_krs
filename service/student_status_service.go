@@ -12,6 +12,7 @@ import (
 )
 
 type StudentStatusService interface {
+	KrsOffers(ctx context.Context, kodeTA string) ([]dto.KrsOfferRes, error)
 	InformationStudent(ctx context.Context, NimMhs string) (dto.InfoStudentRes, error)
 	SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
@@ -26,6 +27,14 @@ type StudentStatusServicesImpl struct {
 
 func NewStudentStatusServices(DB *gorm.DB, studentStatusRepository repository.StudentStatusRepository, validate *validator.Validate) *StudentStatusServicesImpl {
 	return &StudentStatusServicesImpl{DB: DB, StudentStatusRepository: studentStatusRepository, Validate: validate}
+}
+
+func (s StudentStatusServicesImpl) KrsOffers(ctx context.Context, kodeTA string) ([]dto.KrsOfferRes, error) {
+	KrsListOffers, err := s.StudentStatusRepository.KrsOffers(ctx, s.DB, kodeTA)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+	}
+	return KrsListOffers, nil
 }
 
 func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMhs string) (dto.InfoStudentRes, error) {
