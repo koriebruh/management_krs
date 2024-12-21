@@ -9,7 +9,7 @@ import (
 )
 
 type StudentStatusRepository interface {
-	CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) error
+	CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error)
 	InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error)
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
@@ -25,12 +25,13 @@ func NewStudentStatusRepository() *StudentStatusRepositoryImpl {
 	return &StudentStatusRepositoryImpl{}
 }
 
-func (s StudentStatusRepositoryImpl) CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) error {
-	if err := db.WithContext(ctx).Where("nim_dinus =?", nimDinus).First(domain.MahasiswaDinus{}).Error; err != nil {
-		return fmt.Errorf("error %v not found", nimDinus)
+func (s StudentStatusRepositoryImpl) CheckUserExist(ctx context.Context, db *gorm.DB, nimDinus string) (domain.MahasiswaDinus, error) {
+	mahasiswaDinus := domain.MahasiswaDinus{}
+	if err := db.WithContext(ctx).Where("nim_dinus =?", nimDinus).First(&mahasiswaDinus).Error; err != nil {
+		return domain.MahasiswaDinus{}, fmt.Errorf("failed to get status user %v", nimDinus)
 	}
 
-	return nil
+	return mahasiswaDinus, nil
 }
 
 func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db *gorm.DB, nimDinus string) (*dto.InfoStudentDB, error) {

@@ -1,12 +1,28 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"koriebruh/try/conf"
 	"koriebruh/try/domain"
 	"log"
 	"testing"
 )
+
+var ctx = context.Background()
+
+func TestFindExist(t *testing.T) {
+	db := conf.InitDB()
+
+	nimDinus := "262019ecd15e0169f7efdea9a64ad30e"
+	mahasiswaDinus := domain.MahasiswaDinus{}
+	if err := db.WithContext(ctx).Where("nim_dinus =?", nimDinus).First(&mahasiswaDinus).Error; err != nil {
+		log.Fatalf("err find")
+	}
+
+	fmt.Println("yey ")
+
+}
 
 func TestQueryStatusMhs(t *testing.T) {
 	db := conf.InitDB()

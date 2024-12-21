@@ -32,16 +32,32 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 
 	var repositoryData dto.InfoStudentDB
 	err := s.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		////FIND EXIST OR NO
-		//if err := s.StudentStatusRepository.CheckUserExist(ctx, tx, NimMhs); err != nil {
-		//	return err
-		//}
+		//FIND EXIST OR NO
+		user, err := s.StudentStatusRepository.CheckUserExist(ctx, tx, NimMhs)
+		if err != nil {
+			return err
+		}
 
 		student, err := s.StudentStatusRepository.InformationStudent(ctx, tx, NimMhs)
 		if err != nil {
 			return err
 		}
 		repositoryData = *student
+
+		//JIKA DATA INFO KOSONG MAKA
+		isEmpty := func(data dto.InfoStudentDB) bool {
+			return data == (dto.InfoStudentDB{})
+		}
+
+		if isEmpty(repositoryData) {
+			atoi, _ := strconv.Atoi(user.AkdmStat)
+
+			repositoryData.Kelas = strconv.Itoa(user.Kelas)
+			repositoryData.Prodi = user.Prodi
+			repositoryData.NimDinus = user.NimDinus
+			repositoryData.AkdmStat = atoi
+			repositoryData.TaMasuk = user.TaMasuk
+		}
 
 		return nil
 	})
