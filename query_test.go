@@ -288,3 +288,74 @@ func TestQueryGetAllScores(t *testing.T) {
 		t.Logf("Kode Matkul: %s, Mata Kuliah: %s, SKS: %d, Nilai: %s", row.KodeMatkul, row.MataKuliah, row.Sks, row.Nilai)
 	}
 }
+
+func TestCheckScheduleConflict(t *testing.T) {
+
+	db := conf.InitDB()
+
+	var schedules []struct {
+		TahunAjaran    string `gorm:"column:tahun_ajaran" json:"tahun_ajaran"`
+		Kelompok       string `gorm:"column:kelompok" json:"kelompok"`
+		NamaMataKuliah string `gorm:"column:nama_mata_kuliah" json:"nama_mata_kuliah"`
+		JumlahSKS      int    `gorm:"column:jumlah_sks" json:"jumlah_sks"`
+		Hari           string `gorm:"column:hari" json:"hari"`
+		JamMulai       string `gorm:"column:jam_mulai" json:"jam_mulai"`
+		JamSelesai     string `gorm:"column:jam_selesai" json:"jam_selesai"`
+		Ruang          string `gorm:"column:ruang" json:"ruang"`
+		StatusBentrok  string `gorm:"column:status_bentrok" json:"status_bentrok"`
+		KeteranganSlot string `gorm:"column:keterangan_slot" json:"keterangan_slot"`
+	}
+
+	nimDinus := "6f41ddf2e566f37089dd0e2f5fdbeca1"
+	kodeTA := "20232"
+
+	query := `
+        SELECT
+            jt.ta AS tahun_ajaran,
+            jt.klpk AS kelompok,
+            mk.nmmk AS nama_mata_kuliah,
+            mk.sks AS jumlah_sks,
+            h.nama AS hari,
+            sk.jam_mulai,
+            sk.jam_selesai,
+            r.nama AS ruang,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM krs_record kr
+                             JOIN jadwal_tawar jt_inner ON kr.id_jadwal = jt_inner.id
+                             JOIN sesi_kuliah sk_inner ON sk_inner.id = jt_inner.id_sesi1
+                    WHERE kr.nim_dinus = ?
+                      AND jt.id_hari1 = jt_inner.id_hari1
+                      AND (
+                        (sk.jam_mulai < sk_inner.jam_selesai AND sk.jam_selesai > sk_inner.jam_mulai)
+                        )
+                ) THEN 'BENTROK'
+                ELSE NULL
+            END AS status_bentrok,
+            CASE
+                WHEN jt.jsisa = jt.jmax THEN CONCAT(jt.jsisa, '/', jt.jmax, ' SLOT PENUH')
+                ELSE CONCAT(jt.jsisa, '/', jt.jmax)
+            END AS keterangan_slot
+        FROM jadwal_tawar jt
+                 JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+                 JOIN hari h ON jt.id_hari1 = h.id
+                 JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+                 JOIN ruang r ON jt.id_ruang1 = r.id
+        WHERE mk.kur_aktif = 1
+          AND jt.ta = ?
+          AND jt.jns_jam IN (1, 2)
+          AND jt.jsisa <= jt.jmax;
+    `
+
+	// Jalankan raw query
+	err := db.Raw(query, nimDinus, kodeTA).Scan(&schedules).Error
+	if err != nil {
+		fmt.Println("Query execution failed:", err)
+	}
+
+	for _, schedule := range schedules {
+		fmt.Printf("%+v\n", schedule)
+	}
+
+}

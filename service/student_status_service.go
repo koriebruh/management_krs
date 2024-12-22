@@ -20,6 +20,7 @@ type StudentStatusService interface {
 	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
 	StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error)
 	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
+	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 }
 type StudentStatusServicesImpl struct {
 	*gorm.DB
@@ -250,4 +251,25 @@ func (s StudentStatusServicesImpl) GetAllScores(ctx context.Context, nimDinus st
 	}
 
 	return results, nil
+}
+
+func (s StudentStatusServicesImpl) ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error) {
+	var results []dto.ScheduleConflictRes
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		conflicts, err := s.StudentStatusRepository.ScheduleConflicts(ctx, tx, nimDinus, kodeTA)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		results = conflicts
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+
 }

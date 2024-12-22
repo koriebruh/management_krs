@@ -19,7 +19,7 @@ type StudentStatusRepository interface {
 	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error)
 	//KrsOffersMhs()
 	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
-	//GetScheduleBy()
+	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	//InsertSchedule()
 	//RemoveSchedule()
 	//LogSchedulePick()
@@ -236,4 +236,53 @@ func (s StudentStatusRepositoryImpl) GetAllScores(ctx context.Context, db *gorm.
 
 	return scores, nil
 
+}
+
+func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error) {
+	var schedules []dto.ScheduleConflictRes
+	query := `
+        SELECT
+            jt.ta AS tahun_ajaran,
+            jt.klpk AS kelompok,
+            mk.nmmk AS nama_mata_kuliah,
+            mk.sks AS jumlah_sks,
+            h.nama AS hari,
+            sk.jam_mulai,
+            sk.jam_selesai,
+            r.nama AS ruang,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM krs_record kr
+                             JOIN jadwal_tawar jt_inner ON kr.id_jadwal = jt_inner.id
+                             JOIN sesi_kuliah sk_inner ON sk_inner.id = jt_inner.id_sesi1
+                    WHERE kr.nim_dinus = ?
+                      AND jt.id_hari1 = jt_inner.id_hari1
+                      AND (
+                        (sk.jam_mulai < sk_inner.jam_selesai AND sk.jam_selesai > sk_inner.jam_mulai)
+                        )
+                ) THEN 'BENTROK'
+                ELSE NULL
+            END AS status_bentrok,
+            CASE
+                WHEN jt.jsisa = jt.jmax THEN CONCAT(jt.jsisa, '/', jt.jmax, ' SLOT PENUH')
+                ELSE CONCAT(jt.jsisa, '/', jt.jmax)
+            END AS keterangan_slot
+        FROM jadwal_tawar jt
+                 JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+                 JOIN hari h ON jt.id_hari1 = h.id
+                 JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+                 JOIN ruang r ON jt.id_ruang1 = r.id
+        WHERE mk.kur_aktif = 1
+          AND jt.ta = ?
+          AND jt.jns_jam IN (1, 2)
+          AND jt.jsisa <= jt.jmax;
+    `
+
+	// Jalankan raw query
+	if err := db.WithContext(ctx).Raw(query, nimDinus, kodeTA).Scan(&schedules).Error; err != nil {
+		return schedules, fmt.Errorf("err not found ur nim %v and kodeTA %v not exist", nimDinus, kodeTA)
+	}
+
+	return schedules, nil
 }

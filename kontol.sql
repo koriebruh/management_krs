@@ -267,10 +267,10 @@ SELECT
             FROM krs_record kr
                      JOIN jadwal_tawar jt_inner ON kr.id_jadwal = jt_inner.id
                      JOIN sesi_kuliah sk_inner ON sk_inner.id = jt_inner.id_sesi1
-            WHERE kr.nim_dinus = '647e27c32c8935273e876a457b81b186' -- Filter untuk mahasiswa tertentu
+            WHERE kr.nim_dinus = '647e27c32c8935273e876a457b81b186'
               AND jt.id_hari1 = jt_inner.id_hari1 -- Hari yang sama
               AND (
-                (sk.jam_mulai < sk_inner.jam_selesai AND sk.jam_selesai > sk_inner.jam_mulai) -- Jam bertumpang tindih
+                (sk.jam_mulai < sk_inner.jam_selesai AND sk.jam_selesai > sk_inner.jam_mulai) -- Jam BENTROK
                 )
         ) THEN 'BENTROK'
         ELSE NULL
@@ -289,3 +289,8 @@ WHERE mk.kur_aktif = 1     -- Hanya kurikulum aktif
   AND jt.jns_jam IN (1, 2) -- Untuk kelas pagi atau malam
   AND jt.jsisa <= jt.jmax; -- Memastikan kuotanya kosong atau penuh
 
+
+SELECT
+    jt.ta
+    FROM jadwal_tawar jt JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+        JOIN mahasiswa_dinus WHERE nim_dinus = '647e27c32c8935273e876a457b81b186';
