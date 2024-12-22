@@ -128,13 +128,16 @@ SELECT md.nim_dinus,
 FROM mahasiswa_dinus md
          JOIN herregist_mahasiswa he ON md.nim_dinus = he.nim_dinus
          JOIN krs_management.tagihan_mhs tm on he.nim_dinus = tm.nim_dinus
-    WHERE he.nim_dinus = '262019ecd15e0169f7efdea9a64ad30e'
+WHERE he.nim_dinus = '262019ecd15e0169f7efdea9a64ad30e'
 ;
 
 
-select * from validasi_krs_mhs;
-select * from mhs_dipaketkan;
-select * from ip_semester;
+select *
+from validasi_krs_mhs;
+select *
+from mhs_dipaketkan;
+select *
+from ip_semester;
 
 SELECT *,
        CASE
@@ -146,47 +149,75 @@ FROM validasi_krs_mhs;
 # ta
 # ketika ada di mhs di paketkan berarti sudah di paketkan
 # sks, ips
-select * from ip_semester;
+select *
+from ip_semester;
 
 select ip_s.ta,
        ip_s.sks,
        ip_s.ips,
        md.ta_masuk
-from ip_semester ip_s  join mahasiswa_dinus md where ip_s.nim_dinus = 'cc9d8a25e4226f36a0e6f30abe3420f1'
+from ip_semester ip_s
+         join mahasiswa_dinus md
+where ip_s.nim_dinus = 'cc9d8a25e4226f36a0e6f30abe3420f1'
 
 
-select * from matkul_kurikulum; # wehere aktif = 1
-select * from jadwal_tawar;
-select * from ruang;
-select * from hari;
-select * from sesi_kuliah;
-select * from tahun_ajaran;
-select * from mahasiswa_dinus;
+select *
+from matkul_kurikulum; # wehere aktif = 1
+select *
+from jadwal_tawar;
+select *
+from ruang;
+select *
+from hari;
+select *
+from sesi_kuliah;
+select *
+from tahun_ajaran;
+select *
+from mahasiswa_dinus;
 
-SELECT
-    jt.ta AS tahun_ajaran,
-    jt.klpk AS kelompok,
-    mk.nmmk AS nama_mata_kuliah,
-    mk.sks AS jumlah_sks,
-    h.nama AS hari,
-    sk.jam_mulai,
-    sk.jam_selesai,
-    r.nama AS ruang
+SELECT jt.ta   AS tahun_ajaran,
+       jt.klpk AS kelompok,
+       mk.nmmk AS nama_mata_kuliah,
+       mk.sks  AS jumlah_sks,
+       h.nama  AS hari,
+       sk.jam_mulai,
+       sk.jam_selesai,
+       r.nama  AS ruang
 FROM jadwal_tawar jt
          JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
          JOIN hari h ON jt.id_hari1 = h.id
          JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
          JOIN ruang r ON jt.id_ruang1 = r.id
-WHERE
-    mk.kur_aktif = 1 AND -- Hanya kurikulum aktif
+WHERE mk.kur_aktif = 1
+  AND -- Hanya kurikulum aktif
     jt.ta = '20232'; -- Semester aktif (contoh tahun ajaran)
-
-
 
 
 desc tahun_ajaran;
 desc sesi_kuliah;
 
-select * from jadwal_input_krs where prodi = 'D22';
+select *
+from jadwal_input_krs
+where prodi = 'D22';
 
-select * from  mhs_ijin_krs where nim_dinus = '6f41ddf2e566f37089dd0e2f5fdbeca1'
+select *
+from mhs_ijin_krs
+where nim_dinus = '6f41ddf2e566f37089dd0e2f5fdbeca1';
+
+
+SELECT *
+FROM daftar_nilai;
+SELECT *
+FROM matkul_kurikulum;
+
+SELECT mk.kdmk         AS kode_matkul,
+       mk.nmen         AS matakuliah,
+       mk.sks          AS sks,
+       mk.tp           AS kategory,
+       mk.jenis_matkul AS jenis_maktkul,
+       dn.nl           AS nilai
+FROM matkul_kurikulum mk
+         JOIN daftar_nilai dn ON mk.kdmk = dn.kdmk
+WHERE nim_dinus = '6f41ddf2e566f37089dd0e2f5fdbeca1'
+  AND dn.hide = 0;

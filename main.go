@@ -38,11 +38,12 @@ func main() {
 
 	authorized.Get("api/students/krs-offers", studentStatusController.KrsOffers)      // done
 	authorized.Get("api/students/krs-schedule", studentStatusController.KrsSchedule)  // done
-	authorized.Get("api/students/status", studentStatusController.InformationStudent) //done
+	authorized.Get("api/students/status", studentStatusController.InformationStudent) // done
 	authorized.Put("api/students/class", studentStatusController.SetClassTime)        // done
 	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)         // done
 	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)    // done
-	authorized.Get("api/students/krs-status", studentStatusController.StatusKRS)      // done
+	authorized.Get("api/students/krs-status", studentStatusController.StatusKRSMhs)   // done
+	authorized.Get("api/students/scores", studentStatusController.GetAllScores)       // done
 
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)
 	if err := app.Listen(server); err != nil {

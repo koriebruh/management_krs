@@ -17,6 +17,13 @@ type StudentStatusRepository interface {
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error)
 	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error)
+	//KrsOffersMhs()
+	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
+	//GetScheduleBy()
+	//InsertSchedule()
+	//RemoveSchedule()
+	//LogSchedulePick()
+	//ValidationKrs()
 }
 
 type StudentStatusRepositoryImpl struct {
@@ -206,5 +213,27 @@ func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB,
 	}
 
 	return status, nil
+
+}
+
+func (s StudentStatusRepositoryImpl) GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error) {
+	var scores []dto.AllScoresRes
+
+	if err := db.WithContext(ctx).Table("daftar_nilai dn").
+		Select(`
+			mk.kdmk AS kode_matkul,
+			mk.nmen AS matakuliah,
+			mk.sks AS sks,
+			mk.tp AS category,
+			mk.jenis_matkul AS jenis_matkul,
+			dn.nl AS nilai
+		`).
+		Joins("JOIN matkul_kurikulum mk ON dn.kdmk = mk.kdmk").
+		Where("dn.nim_dinus = ? AND dn.hide = 0", nimDinus).
+		Scan(&scores).Error; err != nil {
+		return nil, fmt.Errorf("error nilai where nim %v not found", nimDinus)
+	}
+
+	return scores, nil
 
 }

@@ -19,6 +19,7 @@ type StudentStatusService interface {
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
 	StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error)
+	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
 }
 type StudentStatusServicesImpl struct {
 	*gorm.DB
@@ -230,4 +231,23 @@ func (s StudentStatusServicesImpl) StatusKRS(ctx context.Context, nimDinus strin
 
 	return result, nil
 
+}
+
+func (s StudentStatusServicesImpl) GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error) {
+	var results []dto.AllScoresRes
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		scores, err := s.StudentStatusRepository.GetAllScores(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+		results = scores
+		return nil
+	})
+
+	if err != nil {
+		return results, err
+	}
+
+	return results, nil
 }

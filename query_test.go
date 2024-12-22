@@ -243,3 +243,48 @@ func TestJadwalInput(t *testing.T) {
 
 	fmt.Println(result)
 }
+
+func TestDSDa(t *testing.T) {
+
+}
+
+func TestQueryGetAllScores(t *testing.T) {
+
+	db := conf.InitDB()
+
+	var result []struct {
+		KodeMatkul  string `gorm:"column:kode_matkul" json:"kode_matkul"`
+		MataKuliah  string `gorm:"column:mata_kuliah" json:"mata_kuliah"`
+		Sks         int    `gorm:"column:sks" json:"sks"`
+		Category    string `gorm:"column:category" json:"category"`
+		JenisMatkul string `gorm:"column:jenis_matkul" json:"jenis_matkul"`
+		Nilai       string `gorm:"column:nilai" json:"nilai"`
+	}
+
+	nimDinus := "6f41ddf2e566f37089dd0e2f5fdbeca1"
+
+	err := db.WithContext(ctx).Table("daftar_nilai dn").
+		Select(`
+			mk.kdmk AS kode_matkul,
+			mk.nmen AS matakuliah,
+			mk.sks AS sks,
+			mk.tp AS category,
+			mk.jenis_matkul AS jenis_matkul,
+			dn.nl AS nilai
+		`).
+		Joins("JOIN matkul_kurikulum mk ON dn.kdmk = mk.kdmk").
+		Where("dn.nim_dinus = ? AND dn.hide = 0", nimDinus).
+		Scan(&result).Error
+
+	if err != nil {
+		t.Fatalf("Query failed: %v", err)
+	}
+
+	if len(result) == 0 {
+		t.Fatalf("nilai not found bg")
+	}
+
+	for _, row := range result {
+		t.Logf("Kode Matkul: %s, Mata Kuliah: %s, SKS: %d, Nilai: %s", row.KodeMatkul, row.MataKuliah, row.Sks, row.Nilai)
+	}
+}
