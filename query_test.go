@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"gorm.io/gorm"
 	"koriebruh/try/conf"
 	"koriebruh/try/domain"
+	"koriebruh/try/dto"
 	"koriebruh/try/repository"
 	"log"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -418,16 +422,150 @@ func TestCheckScheduleConflict(t *testing.T) {
 }
 
 func TestInsertSchedule(t *testing.T) {
+
+	nim := "020c6355071b91f8d3eea6442d968525"
+	kodeTA := "20232"
+	idSchduleUserInsert := 277345
+	prodi := "C12"
+
+	db := conf.InitDB()
 	statusRepository := repository.NewStudentStatusRepository()
 
-	statusRepository.InsertKRSPermit() // if != err
+	err := db.Transaction(func(tx *gorm.DB) error {
 
-	statusRepository.ScheduleConflicts() // ambil field keterangan_slot, dan field bentrok, status_pemilihan harus bisa, jika field status_pemilihan
+		//Insert jadwal mata kuliah di luar kurikulum ditolak
+		_, err := statusRepository.InsertKRSPermit(ctx, tx, nim) // if != err
+		if err != nil {
+			panic("TIDAK PUNYA IJIN INSERT") // berarti tidak punya ijin insert krs
+		}
 
-	statusRepository.StatusKRS() // ambil if != err
+		//KRS yang sudah tervalidasi tidak dapat insert lagi
+		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim)
+		if statusKRS.Validate == "Validated" {
+			panic("SUDAH DI VALIDASI TIDAK BISA INSERT LAGI")
+		}
 
-	aambil status pagi or malam dari sini
-	statusRepository.InformationStudent()
+		conflictsSchedule, err := statusRepository.ScheduleConflicts(ctx, tx, nim, kodeTA)
+		var foundSchedule dto.ScheduleConflictRes
+		for _, s := range conflictsSchedule {
+			// Mengecek jika id pada elemen s sama dengan ischedule
+			if s.Id == idSchduleUserInsert {
+				// Menyimpan data jadwal yang sesuai dengan ischedule
+				foundSchedule = dto.ScheduleConflictRes{
+					Id:             s.Id,
+					TahunAjaran:    s.TahunAjaran,
+					Kelompok:       s.Kelompok,
+					NamaMataKuliah: s.NamaMataKuliah,
+					JumlahSKS:      s.JumlahSKS,
+					Hari:           s.Hari,
+					JamMulai:       s.JamMulai,
+					JamSelesai:     s.JamSelesai,
+					Ruang:          s.Ruang,
+					StatusBentrok:  s.StatusBentrok,
+					KeteranganSlot: s.KeteranganSlot,
+				}
+				break // Hentikan loop jika sudah menemukan data yang sesuai
+			}
+		}
 
-	lalu buat func pengecekan
+		if foundSchedule.StatusBentrok == "BENTROK" {
+			panic("BENTROK COK")
+		} else if strings.Contains(foundSchedule.KeteranganSlot, "SLOT PENUH") {
+			panic("SLOT PENUH")
+		}
+
+		offersProdi, err := statusRepository.KrsOffersProdi(ctx, tx, nim, kodeTA, prodi)
+		var foundOfferProdi dto.KrsOffersProdiResponse
+		for _, p := range offersProdi {
+			if p.Id == idSchduleUserInsert {
+				foundOfferProdi = dto.KrsOffersProdiResponse{
+					Id:              p.Id,
+					TahunAjaran:     p.TahunAjaran,
+					KodeMataKuliah:  p.KodeMataKuliah,
+					Kelompok:        p.Kelompok,
+					NamaMataKuliah:  p.NamaMataKuliah,
+					JumlahSKS:       p.JumlahSKS,
+					Hari:            p.Hari,
+					JamMulai:        p.JamMulai,
+					JamSelesai:      p.JamSelesai,
+					Ruang:           p.Ruang,
+					StatusPemilihan: p.StatusPemilihan,
+					StatusKrs:       p.StatusKrs,
+				}
+			}
+		}
+
+		if foundOfferProdi.StatusPemilihan == "Tidak Bisa" {
+			panic("tidak bisa anda sudah dapat A")
+		} else if foundOfferProdi.StatusKrs == "Tidak Mencukupi" {
+			panic("krs tidak cukup")
+		}
+
+		existStudent, err := statusRepository.CheckUserExist(ctx, tx, nim)
+		if err != nil {
+			panic("SATATUS GA KETEMU")
+		}
+
+		var jnsJam string
+		err = tx.WithContext(ctx).
+			Model(domain.JadwalTawar{}).
+			Select("jns_jam").
+			Where("id = ?", idSchduleUserInsert).
+			Scan(&jnsJam).Error
+
+		if err != nil {
+			panic(err) //jenis jam ga ketemu
+		}
+
+		fmt.Println(existStudent.Kelas)
+		fmt.Println(jnsJam)
+
+		if strconv.Itoa(existStudent.Kelas) != jnsJam {
+			panic("JADWAL YG DI AMBIL TIDAK SESUAI PILIHAN KELAS")
+		}
+
+		//INSERT
+		TA, _ := strconv.Atoi(kodeTA)
+		record := domain.KrsRecord{
+			TA:       TA,
+			Kdmk:     foundOfferProdi.KodeMataKuliah,
+			IDJadwal: foundSchedule.Id,
+			NimDinus: nim,
+			Sts:      "B", // ga paham maksud nya
+			Sks:      foundSchedule.JumlahSKS,
+			Modul:    0,
+		}
+		if err = tx.WithContext(ctx).Create(&record).Error; err != nil {
+			panic("ERROR INSERT ADA YG KOSONG NI FIELDN NYA")
+		}
+
+		recordLog := domain.KrsRecordLog{
+			IDKrs:    record.ID,
+			NimDinus: nim,
+			Kdmk:     foundOfferProdi.KodeMataKuliah,
+			Aksi:     1,
+			IDJadwal: foundSchedule.Id,
+			IpAddr:   "",
+		}
+		if err = tx.WithContext(ctx).Create(&recordLog).Error; err != nil {
+			panic("ERROR INSERT LOG")
+		}
+
+		// KURANGI J SISA
+
+		err = tx.WithContext(ctx).
+			Model(&domain.JadwalTawar{}).
+			Where("id = ?", idSchduleUserInsert).
+			UpdateColumn("jsisa", gorm.Expr("jsisa + ?", 1)).Error
+
+		if err != nil {
+			panic("Gagal mengupdate jsisa")
+		}
+
+		return err
+	})
+
+	if err != nil {
+		panic(err)
+	}
 }

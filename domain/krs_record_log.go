@@ -9,7 +9,7 @@ type KrsRecordLog struct {
 	Aksi       int8            `gorm:"default:null;comment:1=insert,2=delete"`
 	IDJadwal   int             `gorm:"default:null"`
 	IpAddr     string          `gorm:"default:null"`
-	LastUpdate time.Time       `gorm:"not null"`
+	LastUpdate time.Time       `gorm:"column:last_update;default:CURRENT_TIMESTAMP"`
 	KrsRecord  KrsRecord       `gorm:"foreignKey:IDKrs;references:ID"`
 	Mahasiswa  MahasiswaDinus  `gorm:"foreignKey:NimDinus;references:NimDinus"`
 	MataKuliah MatkulKurikulum `gorm:"foreignKey:Kdmk;references:Kdmk"`

@@ -449,4 +449,27 @@ SELECT * FROM jadwal_tawar;
 SELECT DISTINCT
     * from krs_record JOIN jadwal_tawar where nim_dinus ='647e27c32c8935273e876a457b81b186'
 
-SELECT * FROM jadwal_tawar WHERE id = '276209';
+SELECT jns_jam FROM jadwal_tawar WHERE id = '276209';
+
+select * from jadwal_tawar;
+
+
+select * from krs_record;
+DESC krs_record;
+
+select jsisa from jadwal_tawar where id = '276209' ;
+
+SELECT * FROM mhs_ijin_krs;
+SELECT * from ip_semester where nim_dinus= '00ce7b9909293860b12f4bd86ab26d0e';
+
+SELECT m.nim_dinus
+FROM mhs_ijin_krs m
+         JOIN ip_semester i ON m.nim_dinus = i.nim_dinus
+JOIN mahasiswa_dinus md ON md.nim_dinus = m.nim_dinus WHERE akdm_stat = 1;
+
+
+SELECT mahasiswa_dinus.nim_dinus
+FROM mahasiswa_dinus
+WHERE mahasiswa_dinus.nim_dinus = '020c6355071b91f8d3eea6442d968525';
+
+show columns from krs_record_log;
