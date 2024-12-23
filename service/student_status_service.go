@@ -19,6 +19,7 @@ type StudentStatusService interface {
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
 	StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error)
+	KrsOffersProdi(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 }
@@ -231,6 +232,33 @@ func (s StudentStatusServicesImpl) StatusKRS(ctx context.Context, nimDinus strin
 	}
 
 	return result, nil
+
+}
+
+func (s StudentStatusServicesImpl) KrsOffersProdi(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsOffersProdiResponse, error) {
+	var results []dto.KrsOffersProdiResponse
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+
+		userExist, err := s.StudentStatusRepository.CheckUserExist(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		prodiSchedule, err := s.StudentStatusRepository.KrsOffersProdi(ctx, tx, nimDinus, kodeTA, userExist.Prodi)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		results = prodiSchedule
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 
 }
 

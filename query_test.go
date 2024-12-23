@@ -244,7 +244,63 @@ func TestJadwalInput(t *testing.T) {
 	fmt.Println(result)
 }
 
-func TestDSDa(t *testing.T) {
+func TestScheduleByProdi(t *testing.T) {
+
+	db := conf.InitDB()
+
+	var results []struct {
+		TahunAjaran     string `gorm:"column:tahun_ajaran"`
+		KodeMataKuliah  string `gorm:"column:kode_mata_kuliah"`
+		Kelompok        string `gorm:"column:kelompok"`
+		NamaMataKuliah  string `gorm:"column:nama_mata_kuliah"`
+		JumlahSKS       int    `gorm:"column:jumlah_sks"`
+		Hari            string `gorm:"column:hari"`
+		JamMulai        string `gorm:"column:jam_mulai"` // Perbaikan di sini, sebelumnya ada typo `:=`
+		JamSelesai      string `gorm:"column:jam_selesai"`
+		Ruang           string `gorm:"column:ruang"`
+		StatusPemilihan string `gorm:"column:status_pemilihan"`
+	}
+
+	nimDinus := "647e27c32c8935273e876a457b81b186"
+	kelompok := "B11%"
+
+	query := `
+        SELECT DISTINCT
+            jt.ta AS tahun_ajaran,
+            jt.kdmk AS kode_mata_kuliah,
+            jt.klpk AS kelompok,
+            mk.nmmk AS nama_mata_kuliah,
+            mk.sks AS jumlah_sks,
+            h.nama AS hari,
+            sk.jam_mulai,
+            sk.jam_selesai,
+            r.nama AS ruang,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM daftar_nilai dn
+                    WHERE dn.kdmk = jt.kdmk AND dn.nl = 'A' AND dn.nim_dinus = ?
+                ) THEN 'Tidak Bisa'
+                ELSE 'Bisa'
+            END AS status_pemilihan
+        FROM
+            jadwal_tawar jt
+            JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+            JOIN hari h ON jt.id_hari1 = h.id
+            JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+            JOIN ruang r ON jt.id_ruang1 = r.id
+        WHERE
+            jt.ta IS NOT NULL
+            AND jt.klpk LIKE ?
+        ORDER BY
+            jt.ta, mk.nmmk;
+    `
+
+	if err := db.Raw(query, nimDinus, kelompok).Scan(&results).Error; err != nil {
+		panic(err)
+	}
+
+	fmt.Println(results)
 
 }
 

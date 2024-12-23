@@ -17,7 +17,7 @@ type StudentStatusRepository interface {
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error)
 	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error)
-	//KrsOffersMhs()
+	KrsOffersProdi(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string, kelompok string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	//InsertSchedule()
@@ -37,7 +37,7 @@ func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB,
 	var krsOffers []dto.KrsOfferRes
 
 	err := db.Raw(`
-		SELECT
+		SELECT DISTINCT
 			jt.ta AS tahun_ajaran,
 			jt.klpk AS kelompok,
 			mk.nmmk AS nama_mata_kuliah,
@@ -216,6 +216,52 @@ func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB,
 
 }
 
+func (s StudentStatusRepositoryImpl) KrsOffersProdi(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string, kelompok string) ([]dto.KrsOffersProdiResponse, error) {
+	var krsOfferByProdi []dto.KrsOffersProdiResponse
+
+	klp := fmt.Sprintf("%s%%", kelompok)
+	query := `
+        SELECT DISTINCT
+            jt.ta AS tahun_ajaran,
+            jt.kdmk AS kode_mata_kuliah,
+            jt.klpk AS kelompok,
+            mk.nmmk AS nama_mata_kuliah,
+            mk.sks AS jumlah_sks,
+            h.nama AS hari,
+            sk.jam_mulai,
+            sk.jam_selesai,
+            r.nama AS ruang,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM daftar_nilai dn
+                    WHERE dn.kdmk = jt.kdmk AND dn.nl = 'A' AND dn.nim_dinus = ?
+                ) THEN 'Tidak Bisa'
+                ELSE 'Bisa'
+            END AS status_pemilihan
+        FROM
+            jadwal_tawar jt
+            JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+            JOIN hari h ON jt.id_hari1 = h.id
+            JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+            JOIN ruang r ON jt.id_ruang1 = r.id
+        WHERE
+            jt.ta IS NOT NULL
+          AND jt.ta = ?
+            AND jt.klpk LIKE ?
+        ORDER BY
+            jt.ta, mk.nmmk;
+    `
+
+	if err := db.WithContext(ctx).Raw(query, nimDinus, kodeTA, klp).Scan(&krsOfferByProdi).Error; err != nil {
+		return nil, fmt.Errorf("error show where nim %v tahunAjar %v not found and kel prodi %v", nimDinus, kodeTA)
+	}
+
+	fmt.Println(krsOfferByProdi)
+
+	return krsOfferByProdi, nil
+}
+
 func (s StudentStatusRepositoryImpl) GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error) {
 	var scores []dto.AllScoresRes
 
@@ -241,7 +287,7 @@ func (s StudentStatusRepositoryImpl) GetAllScores(ctx context.Context, db *gorm.
 func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error) {
 	var schedules []dto.ScheduleConflictRes
 	query := `
-        SELECT
+        SELECT DISTINCT
             jt.ta AS tahun_ajaran,
             jt.klpk AS kelompok,
             mk.nmmk AS nama_mata_kuliah,

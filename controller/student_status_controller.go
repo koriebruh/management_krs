@@ -16,6 +16,7 @@ type StudentStatusController interface {
 	GetAllKRSPick(ctx *fiber.Ctx) error
 	InsertKRSPermit(ctx *fiber.Ctx) error
 	StatusKRSMhs(ctx *fiber.Ctx) error
+	KrsOffersProdi(ctx *fiber.Ctx) error
 	GetAllScores(ctx *fiber.Ctx) error
 	ScheduleConflicts(ctx *fiber.Ctx) error
 }
@@ -139,6 +140,23 @@ func (c StudentStatusControllerImpl) StatusKRSMhs(ctx *fiber.Ctx) error {
 		Code:   http.StatusOK,
 		Status: "OK",
 		Data:   krsStatus,
+	})
+
+}
+
+func (c StudentStatusControllerImpl) KrsOffersProdi(ctx *fiber.Ctx) error {
+	NimDinus := ctx.Locals("nim_dinus").(string)
+	kodeTA := ctx.Query("kode-ta")
+
+	prodiSchedule, err := c.StudentStatusService.KrsOffersProdi(ctx.Context(), NimDinus, kodeTA)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   prodiSchedule,
 	})
 
 }
