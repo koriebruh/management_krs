@@ -286,9 +286,9 @@ func (s StudentStatusRepositoryImpl) GetAllScores(ctx context.Context, db *gorm.
 	var scores []dto.AllScoresRes
 
 	if err := db.WithContext(ctx).Table("daftar_nilai dn").
-		Select(`
+		Select(` DISTINCT
 			mk.kdmk AS kode_matkul,
-			mk.nmen AS matakuliah,
+			mk.nmmk AS matakuliah,
 			mk.sks AS sks,
 			mk.tp AS category,
 			mk.jenis_matkul AS jenis_matkul,

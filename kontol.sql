@@ -438,3 +438,6 @@ WHERE jt.ta IS NOT NULL   -- Pastikan hanya menampilkan data valid
   AND jt.klpk LIKE 'B11%' -- Hanya tampilkan kelompok yang dimulai dengan 'B11'
   AND jt.ta = '20232'
 ORDER BY jt.ta, mk.nmmk;
+
+
+select * from matkul_kurikulum;
