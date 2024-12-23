@@ -11,4 +11,5 @@ type KrsOffersProdiResponse struct {
 	JamSelesai      string `gorm:"column:jam_selesai"`
 	Ruang           string `gorm:"column:ruang"`
 	StatusPemilihan string `gorm:"column:status_pemilihan"`
+	StatusKrs       string `gorm:"column:status_krs"`
 }
