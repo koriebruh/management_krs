@@ -36,8 +36,9 @@ func NewStudentStatusRepository() *StudentStatusRepositoryImpl {
 func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB, kodeTA string) ([]dto.KrsOfferRes, error) {
 	var krsOffers []dto.KrsOfferRes
 
-	err := db.Raw(`
+	err := db.WithContext(ctx).Raw(`
 		SELECT DISTINCT
+		    jt.id AS id,
 			jt.ta AS tahun_ajaran,
 			jt.klpk AS kelompok,
 			mk.nmmk AS nama_mata_kuliah,
@@ -221,7 +222,9 @@ func (s StudentStatusRepositoryImpl) KrsOffersProdi(ctx context.Context, db *gor
 
 	klp := fmt.Sprintf("%s%%", kelompok)
 	query := `
-		SELECT DISTINCT jt.ta   AS tahun_ajaran,
+		SELECT DISTINCT 
+		    			jt.id   AS id,
+		    			jt.ta   AS tahun_ajaran,
 						jt.kdmk AS kode_mata_kuliah,
 						jt.klpk AS kelompok,
 						mk.nmmk AS nama_mata_kuliah,
@@ -308,6 +311,7 @@ func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *
 	var schedules []dto.ScheduleConflictRes
 	query := `
         SELECT DISTINCT
+            jt.id   AS id,
             jt.ta AS tahun_ajaran,
             jt.klpk AS kelompok,
             mk.nmmk AS nama_mata_kuliah,

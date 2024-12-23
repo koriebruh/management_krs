@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"koriebruh/try/conf"
 	"koriebruh/try/domain"
+	"koriebruh/try/repository"
 	"log"
 	"testing"
 )
@@ -414,4 +415,19 @@ func TestCheckScheduleConflict(t *testing.T) {
 		fmt.Printf("%+v\n", schedule)
 	}
 
+}
+
+func TestInsertSchedule(t *testing.T) {
+	statusRepository := repository.NewStudentStatusRepository()
+
+	statusRepository.InsertKRSPermit() // if != err
+
+	statusRepository.ScheduleConflicts() // ambil field keterangan_slot, dan field bentrok, status_pemilihan harus bisa, jika field status_pemilihan
+
+	statusRepository.StatusKRS() // ambil if != err
+
+	aambil status pagi or malam dari sini
+	statusRepository.InformationStudent()
+
+	lalu buat func pengecekan
 }

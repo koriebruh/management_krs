@@ -1,6 +1,7 @@
 package dto
 
 type ScheduleConflictRes struct {
+	Id             int    `gorm:"column:id" json:"id"`
 	TahunAjaran    string `gorm:"column:tahun_ajaran" json:"tahun_ajaran"`
 	Kelompok       string `gorm:"column:kelompok" json:"kelompok"`
 	NamaMataKuliah string `gorm:"column:nama_mata_kuliah" json:"nama_mata_kuliah"`

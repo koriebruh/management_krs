@@ -158,7 +158,7 @@ select ip_s.ta,
        md.ta_masuk
 from ip_semester ip_s
          join mahasiswa_dinus md
-where ip_s.nim_dinus = 'cc9d8a25e4226f36a0e6f30abe3420f1'
+where ip_s.nim_dinus = 'cc9d8a25e4226f36a0e6f30abe3420f1';
 
 
 select *
@@ -441,3 +441,12 @@ ORDER BY jt.ta, mk.nmmk;
 
 
 select * from matkul_kurikulum;
+
+#jt.jns_jam IN (1, 2)
+
+SELECT * FROM krs_record;
+SELECT * FROM jadwal_tawar;
+SELECT DISTINCT
+    * from krs_record JOIN jadwal_tawar where nim_dinus ='647e27c32c8935273e876a457b81b186'
+
+SELECT * FROM jadwal_tawar WHERE id = '276209';

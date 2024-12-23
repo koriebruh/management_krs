@@ -1,6 +1,7 @@
 package dto
 
 type KrsOffersProdiResponse struct {
+	Id              int    `gorm:"column:id" json:"id"`
 	TahunAjaran     string `gorm:"column:tahun_ajaran"`
 	KodeMataKuliah  string `gorm:"column:kode_mata_kuliah"`
 	Kelompok        string `gorm:"column:kelompok"`
