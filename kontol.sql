@@ -176,24 +176,48 @@ from tahun_ajaran;
 select *
 from mahasiswa_dinus;
 
-SELECT jt.ta   AS tahun_ajaran,
-       jt.klpk AS kelompok,
-       mk.nmmk AS nama_mata_kuliah,
-       mk.sks  AS jumlah_sks,
-       h.nama  AS hari,
-       sk.jam_mulai,
-       sk.jam_selesai,
-       r.nama  AS ruang
+SELECT distinct jt.ta   AS tahun_ajaran,
+                jt.klpk AS kelompok,
+                mk.nmmk AS nama_mata_kuliah,
+                mk.sks  AS jumlah_sks,
+                h.nama  AS hari,
+                sk.jam_mulai,
+                sk.jam_selesai,
+                r.nama  AS ruang
 FROM jadwal_tawar jt
          JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
          JOIN hari h ON jt.id_hari1 = h.id
          JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
-         JOIN ruang r ON jt.id_ruang1 = r.id
+         JOIN ruang r ON jt.id_ruang1 = r.id;
 WHERE mk.kur_aktif = 1
   AND -- Hanya kurikulum aktif
     jt.ta = '20232'; -- Semester aktif (contoh tahun ajaran)
 
+SELECT DISTINCT jt.ta   AS tahun_ajaran,
+                jt.klpk AS kelompok,
+                mk.nmmk AS nama_mata_kuliah,
+                mk.sks  AS jumlah_sks,
+                h.nama  AS hari,
+                sk.jam_mulai,
+                sk.jam_selesai,
+                r.nama  AS ruang
+FROM jadwal_tawar jt
+         LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+         LEFT JOIN hari h ON jt.id_hari1 = h.id
+         LEFT JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
+         LEFT JOIN ruang r ON jt.id_ruang1 = r.id
+WHERE jt.ta = '20232';
 
+
+
+select *
+from hari;
+
+select *
+from tahun_ajaran;
+select *
+from jadwal_tawar
+where ta = '20232';
 desc sesi_kuliah;
 
 select *
@@ -328,37 +352,39 @@ WHERE jt.ta IS NOT NULL -- Pastikan hanya menampilkan data valid
 ORDER BY jt.ta, mk.nmmk;
 
 
-SELECT DISTINCT jt.ta   AS tahun_ajaran,
-                jt.kdmk AS kode_mata_kuiah,
-                jt.klpk AS kelompok,
-                mk.nmmk AS nama_mata_kuliah,
-                mk.sks  AS jumlah_sks,
-                h.nama  AS hari,
-                sk.jam_mulai,
-                sk.jam_selesai,
-                r.nama  AS ruang,
-                CASE
-                    WHEN EXISTS (SELECT 1
-                                 FROM daftar_nilai dn
-                                 WHERE dn.kdmk = jt.kdmk
-                                   AND dn.nl = 'A'
-                                   AND dn.nim_dinus = '647e27c32c8935273e876a457b81b186') THEN 'Tidak Bisa'
-                    ELSE 'Bisa'
-                    END AS status_pemilihan CASE
-        WHEN
+SELECT DISTINCT
+    jt.ta AS tahun_ajaran,
+    jt.kdmk AS kode_mata_kuiah,
+    jt.klpk AS kelompok,
+    mk.nmmk AS nama_mata_kuliah,
+    mk.sks AS jumlah_sks,
+    h.nama AS hari,
+    sk.jam_mulai,
+    sk.jam_selesai,
+    r.nama AS ruang,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM daftar_nilai dn
+            WHERE dn.kdmk = jt.kdmk
+              AND dn.nl = 'A'
+              AND dn.nim_dinus = '647e27c32c8935273e876a457b81b186'
+        ) THEN 'Tidak Bisa'
+        ELSE 'Bisa'
+        END AS status_pemilihan
 FROM
     jadwal_tawar jt
-    JOIN matkul_kurikulum mk
-ON jt.kdmk = mk.kdmk
-    JOIN hari h ON jt.id_hari1 = h.id
-    JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
-    JOIN ruang r ON jt.id_ruang1 = r.id
+        LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+        LEFT JOIN hari h ON jt.id_hari1 = h.id
+        LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+        LEFT JOIN ruang r ON jt.id_ruang1 = r.id
 WHERE
     jt.ta IS NOT NULL     -- Pastikan hanya menampilkan data valid
   AND jt.klpk LIKE 'B11%' -- Hanya tampilkan kelompok yang dimulai dengan 'B11'
   AND jt.ta = '20232'
 ORDER BY
     jt.ta, mk.nmmk;
+
 
 select *
 from ip_semester
@@ -430,47 +456,65 @@ SELECT DISTINCT jt.ta   AS tahun_ajaran,
                          )
                     END AS status_krs
 FROM jadwal_tawar jt
-         JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-         JOIN hari h ON jt.id_hari1 = h.id
-         JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
-         JOIN ruang r ON jt.id_ruang1 = r.id
+         LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+         LEFT JOIN hari h ON jt.id_hari1 = h.id
+         LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+         LEFT JOIN ruang r ON jt.id_ruang1 = r.id
 WHERE jt.ta IS NOT NULL   -- Pastikan hanya menampilkan data valid
   AND jt.klpk LIKE 'B11%' -- Hanya tampilkan kelompok yang dimulai dengan 'B11'
   AND jt.ta = '20232'
 ORDER BY jt.ta, mk.nmmk;
 
 
-select * from matkul_kurikulum;
+select *
+from matkul_kurikulum;
 
 #jt.jns_jam IN (1, 2)
 
-SELECT * FROM krs_record;
-SELECT * FROM jadwal_tawar;
-SELECT DISTINCT
-    * from krs_record JOIN jadwal_tawar where nim_dinus ='647e27c32c8935273e876a457b81b186'
+SELECT *
+FROM krs_record;
+SELECT *
+FROM jadwal_tawar;
+SELECT DISTINCT *
+from krs_record
+         JOIN jadwal_tawar
+where nim_dinus = '647e27c32c8935273e876a457b81b186'
 
-SELECT jns_jam FROM jadwal_tawar WHERE id = '276209';
+SELECT jns_jam
+FROM jadwal_tawar
+WHERE id = '276209';
 
-select * from jadwal_tawar;
+select *
+from jadwal_tawar;
 
 
-select * from krs_record;
+select *
+from krs_record;
 DESC krs_record;
 
-select jsisa from jadwal_tawar where id = '276209' ;
+select jsisa
+from jadwal_tawar
+where id = '276209';
 
-SELECT * FROM mhs_ijin_krs;
-SELECT * from ip_semester where nim_dinus= '00ce7b9909293860b12f4bd86ab26d0e';
+SELECT *
+FROM mhs_ijin_krs;
+SELECT *
+from ip_semester
+where nim_dinus = '00ce7b9909293860b12f4bd86ab26d0e';
 
 #find u ser bisa insert test
 SELECT m.nim_dinus
 FROM mhs_ijin_krs m
          JOIN ip_semester i ON m.nim_dinus = i.nim_dinus
-JOIN mahasiswa_dinus md ON md.nim_dinus = m.nim_dinus WHERE akdm_stat = 1;
+         JOIN mahasiswa_dinus md ON md.nim_dinus = m.nim_dinus
+WHERE akdm_stat = 1;
 
 
 SELECT mahasiswa_dinus.nim_dinus
 FROM mahasiswa_dinus
 WHERE mahasiswa_dinus.nim_dinus = '020c6355071b91f8d3eea6442d968525';
 
-SELECT * FROM jadwal_tawar JOIN sesi_kuliah on jadwal_tawar.id_sesi1 = sesi_kuliah.id WHERE jadwal_tawar.id = 275486;
+SELECT *
+FROM jadwal_tawar
+         JOIN sesi_kuliah on jadwal_tawar.id_sesi1 = sesi_kuliah.id
+WHERE jadwal_tawar.id = 275486;

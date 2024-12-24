@@ -49,10 +49,10 @@ func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB,
 			sk.jam_selesai,
 			r.nama AS ruang
 		FROM jadwal_tawar jt
-			JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-			JOIN hari h ON jt.id_hari1 = h.id
-			JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
-			JOIN ruang r ON jt.id_ruang1 = r.id
+			LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+			LEFT JOIN hari h ON jt.id_hari1 = h.id
+			LEFT JOIN sesi_kuliah sk ON jt.id_sesi1 = sk.id
+			LEFT JOIN ruang r ON jt.id_ruang1 = r.id
 		WHERE
 			mk.kur_aktif = 1 AND
 			jt.ta = ?;
@@ -267,10 +267,10 @@ func (s StudentStatusRepositoryImpl) KrsOffersProdi(ctx context.Context, db *gor
 								 )
 							END AS status_krs
 		FROM jadwal_tawar jt
-				 JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-				 JOIN hari h ON jt.id_hari1 = h.id
-				 JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
-				 JOIN ruang r ON jt.id_ruang1 = r.id
+				 LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+				 LEFT JOIN hari h ON jt.id_hari1 = h.id
+				 LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+				 LEFT JOIN ruang r ON jt.id_ruang1 = r.id
 		WHERE jt.ta IS NOT NULL   -- Pastikan hanya menampilkan data valid
 		  AND jt.klpk LIKE ? -- Hanya tampilkan kelompok yang dimulai dengan 'B11'
 		  AND jt.ta = ?
@@ -340,9 +340,9 @@ func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *
                 ELSE CONCAT(jt.jsisa, '/', jt.jmax)
             END AS keterangan_slot
         FROM jadwal_tawar jt
-                 JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-                 JOIN hari h ON jt.id_hari1 = h.id
-                 JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+                 LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+                 LEFT JOIN hari h ON jt.id_hari1 = h.id
+                 LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
                  JOIN ruang r ON jt.id_ruang1 = r.id
         WHERE mk.kur_aktif = 1
           AND jt.ta = ?
