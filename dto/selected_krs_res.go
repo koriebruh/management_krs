@@ -1,12 +1,14 @@
 package dto
 
 type SelectedKrs struct {
-	NamaMatkul   string `json:"nama_matkul"`
-	NamaMatkulEN string `json:"nama_matkul_en"`
-	Tipe         string `json:"tipe"`
-	Semester     int    `json:"semester"`
-	JenisMatkul  string `json:"jenis_matkul"`
-	Hari1        string `json:"hari_1"`
-	Hari2        string `json:"hari_2"`
-	Hari3        string `json:"hari_3"`
+	ID             int    `json:"id"`               // ID Jadwal Tawar
+	TahunAjaran    string `json:"tahun_ajaran"`     // Tahun Ajaran
+	KodeMataKuliah string `json:"kode_mata_kuliah"` // Kode Mata Kuliah
+	Kelompok       string `json:"kelompok"`         // Kelompok
+	NamaMataKuliah string `json:"nama_mata_kuliah"` // Nama Mata Kuliah
+	JumlahSKS      int    `json:"jumlah_sks"`       // Jumlah SKS
+	Hari           string `json:"hari"`             // Nama Hari
+	JamMulai       string `json:"jam_mulai"`        // Jam Mulai Kuliah
+	JamSelesai     string `json:"jam_selesai"`      // Jam Selesai Kuliah
+	Ruang          string `json:"ruang"`            // Nama Ruang
 }

@@ -131,14 +131,25 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 
 	var results []dto.SelectedKrs
 
-	err := db.WithContext(ctx).Model(&domain.KrsRecord{}).
-		Select("matkul_kurikulum.nmmk AS nama_matkul, matkul_kurikulum.nmen AS nama_matkul_en, matkul_kurikulum.tp AS tipe, matkul_kurikulum.smt AS semester, matkul_kurikulum.jenis_matkul AS jenis_matkul, hari1.nama AS hari1, hari2.nama AS hari2, hari3.nama AS hari3").
-		Joins("JOIN matkul_kurikulum ON matkul_kurikulum.kdmk = krs_record.kdmk").
-		Joins("JOIN jadwal_tawar ON jadwal_tawar.id = krs_record.id_jadwal").
-		Joins("LEFT JOIN hari AS hari1 ON hari1.id = jadwal_tawar.id_hari1").
-		Joins("LEFT JOIN hari AS hari2 ON hari2.id = jadwal_tawar.id_hari2").
-		Joins("LEFT JOIN hari AS hari3 ON hari3.id = jadwal_tawar.id_hari3").
-		Where("krs_record.nim_dinus = ?", nimDinus).
+	err := db.WithContext(ctx).Model(&domain.JadwalTawar{}).
+		Select(`
+        jadwal_tawar.id AS id,
+        jadwal_tawar.ta AS tahun_ajaran,
+        jadwal_tawar.kdmk AS kode_mata_kuliah,
+        jadwal_tawar.klpk AS kelompok,
+        matkul_kurikulum.nmmk AS nama_mata_kuliah,
+        matkul_kurikulum.sks AS jumlah_sks,
+        hari.nama AS hari,
+        sesi_kuliah.jam_mulai,
+        sesi_kuliah.jam_selesai,
+        ruang.nama AS ruang
+    `).
+		Joins("LEFT JOIN matkul_kurikulum ON jadwal_tawar.kdmk = matkul_kurikulum.kdmk").
+		Joins("LEFT JOIN hari ON jadwal_tawar.id_hari1 = hari.id").
+		Joins("LEFT JOIN sesi_kuliah ON jadwal_tawar.id_sesi1 = sesi_kuliah.id").
+		Joins("LEFT JOIN ruang ON jadwal_tawar.id_ruang1 = ruang.id").
+		Joins("JOIN krs_record ON krs_record.kdmk = matkul_kurikulum.kdmk").
+		Where("jadwal_tawar.ta IS NOT NULL AND krs_record.nim_dinus = ?", nimDinus).
 		Scan(&results).Error
 
 	if err != nil {

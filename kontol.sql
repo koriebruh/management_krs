@@ -518,3 +518,27 @@ SELECT *
 FROM jadwal_tawar
          JOIN sesi_kuliah on jadwal_tawar.id_sesi1 = sesi_kuliah.id
 WHERE jadwal_tawar.id = 275486;
+
+
+
+SELECT DISTINCT
+    jt.id,
+    jt.ta AS tahun_ajaran,
+    jt.kdmk AS kode_mata_kuiah,
+    jt.klpk AS kelompok,
+    mk.nmmk AS nama_mata_kuliah,
+    mk.sks AS jumlah_sks,
+    h.nama AS hari,
+    sk.jam_mulai,
+    sk.jam_selesai,
+    r.nama AS ruang
+FROM
+    jadwal_tawar jt
+        LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+        LEFT JOIN hari h ON jt.id_hari1 = h.id
+        LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+        LEFT JOIN ruang r ON jt.id_ruang1 = r.id
+        JOIN krs_record kr On kr.kdmk = mk.kdmk
+WHERE
+    jt.ta IS NOT NULL     -- Pastikan hanya menampilkan data valid
+  AND  nim_dinus = '560b4d78fc163d57774e045317be842f'
