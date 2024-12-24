@@ -462,6 +462,7 @@ select jsisa from jadwal_tawar where id = '276209' ;
 SELECT * FROM mhs_ijin_krs;
 SELECT * from ip_semester where nim_dinus= '00ce7b9909293860b12f4bd86ab26d0e';
 
+#find u ser bisa insert test
 SELECT m.nim_dinus
 FROM mhs_ijin_krs m
          JOIN ip_semester i ON m.nim_dinus = i.nim_dinus
@@ -472,4 +473,4 @@ SELECT mahasiswa_dinus.nim_dinus
 FROM mahasiswa_dinus
 WHERE mahasiswa_dinus.nim_dinus = '020c6355071b91f8d3eea6442d968525';
 
-show columns from krs_record_log;
+SELECT * FROM jadwal_tawar JOIN sesi_kuliah on jadwal_tawar.id_sesi1 = sesi_kuliah.id WHERE jadwal_tawar.id = 275486;

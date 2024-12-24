@@ -46,6 +46,7 @@ func main() {
 	authorized.Get("api/students/scores", studentStatusController.GetAllScores)                 // done
 	authorized.Get("api/students/schedule-conflict", studentStatusController.ScheduleConflicts) // done
 	authorized.Get("api/students/schedule-prodi", studentStatusController.KrsOffersProdi)       // done
+	authorized.Post("api/students/schedule/:id", studentStatusController.InsertSchedule)        // done
 
 	//KRS yg user pilih itu krs_record
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)

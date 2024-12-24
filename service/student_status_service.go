@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
+	"koriebruh/try/domain"
 	"koriebruh/try/dto"
 	"koriebruh/try/helper"
 	"koriebruh/try/repository"
 	"strconv"
+	"strings"
 )
 
 type StudentStatusService interface {
@@ -22,7 +24,9 @@ type StudentStatusService interface {
 	KrsOffersProdi(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
+	InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error)
 }
+
 type StudentStatusServicesImpl struct {
 	*gorm.DB
 	repository.StudentStatusRepository
@@ -299,5 +303,143 @@ func (s StudentStatusServicesImpl) ScheduleConflicts(ctx context.Context, nimDin
 	}
 
 	return results, nil
+
+}
+
+func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error) {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		userExist, err := s.StudentStatusRepository.CheckUserExist(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+		Prodi := userExist.Prodi
+
+		//CEK APAKAH PUNYA IJIN INSERT KRS
+		_, err = s.StudentStatusRepository.InsertKRSPermit(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("no have permit insert krs"))
+		}
+
+		//KRS YG SUDAH DI VALIDASI TIDAK BISA INSERT
+		statusKRS, _ := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		if statusKRS.Validate == "Validated" {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("krs already validated can't insert"))
+		}
+
+		//AMBIL DATA JADWAL
+		conflictsSchedule, err := s.StudentStatusRepository.ScheduleConflicts(ctx, tx, nimDinus, kodeTA)
+		var foundSchedule dto.ScheduleConflictRes
+		for _, s := range conflictsSchedule {
+			if s.Id == idSchedule {
+				foundSchedule = dto.ScheduleConflictRes{
+					Id:             s.Id,
+					TahunAjaran:    s.TahunAjaran,
+					Kelompok:       s.Kelompok,
+					NamaMataKuliah: s.NamaMataKuliah,
+					JumlahSKS:      s.JumlahSKS,
+					Hari:           s.Hari,
+					JamMulai:       s.JamMulai,
+					JamSelesai:     s.JamSelesai,
+					Ruang:          s.Ruang,
+					StatusBentrok:  s.StatusBentrok,
+					KeteranganSlot: s.KeteranganSlot,
+				}
+				break
+			}
+		}
+		fmt.Println(foundSchedule)
+
+		//CEK JADWAL BENTROK KAH ?
+		//CEK SLOT PENUH KAH ?
+		if foundSchedule.StatusBentrok == "BENTROK" {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("krs bentrok bang"))
+		} else if strings.Contains(foundSchedule.KeteranganSlot, "SLOT PENUH") {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("slot sudah penuh"))
+		}
+
+		//UNTUK PENGECEKAN APAKAH YG DI PILIH ADALAH YG SEBELUM NYA APA A  DAN MENGECEK APAKAH KRS MENCUKUPI
+		offersProdi, err := s.StudentStatusRepository.KrsOffersProdi(ctx, tx, nimDinus, kodeTA, Prodi)
+		var foundOfferProdi dto.KrsOffersProdiResponse
+		for _, p := range offersProdi {
+			if p.Id == idSchedule {
+				foundOfferProdi = dto.KrsOffersProdiResponse{
+					Id:              p.Id,
+					TahunAjaran:     p.TahunAjaran,
+					KodeMataKuliah:  p.KodeMataKuliah,
+					Kelompok:        p.Kelompok,
+					NamaMataKuliah:  p.NamaMataKuliah,
+					JumlahSKS:       p.JumlahSKS,
+					Hari:            p.Hari,
+					JamMulai:        p.JamMulai,
+					JamSelesai:      p.JamSelesai,
+					Ruang:           p.Ruang,
+					StatusPemilihan: p.StatusPemilihan,
+					StatusKrs:       p.StatusKrs,
+				}
+			}
+		}
+		fmt.Println(foundOfferProdi)
+
+		if foundOfferProdi.StatusPemilihan == "Tidak Bisa" {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("anda sebelumnya sudah dapat A tidak bisa memilih ini"))
+		} else if foundOfferProdi.StatusKrs == "Tidak Mencukupi" {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("krs anda tidak mencukupi"))
+		}
+
+		// MEMASTIKAN JAM (PAGI,MALAM) SESUAI YG DI SET
+		var jnsJam string
+		if err = tx.WithContext(ctx).
+			Model(domain.JadwalTawar{}).
+			Select("jns_jam").
+			Where("id = ?", idSchedule).
+			Scan(&jnsJam).Error; err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("jenis kelas dari shecdule yg di pilih tidak ketemu"))
+		}
+
+		fmt.Println("JENIS JAM ", jnsJam)
+		fmt.Println("JENIS JAM ", userExist.Kelas)
+
+		if jnsJam != strconv.Itoa(userExist.Kelas) {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("kelas anda %v sedangkan kelas yang ingin ada pilih %v ", userExist.Kelas, jnsJam))
+		}
+
+		//JIKA NANTI ERROR BEARRTI ANTARA foundOfferProdi DAN foundSchedule MALSAHNAYA DATANYA ANEH KADANG TIDAKA DI SALAH 1
+		TA, _ := strconv.Atoi(kodeTA)
+		record := domain.KrsRecord{
+			TA:       TA,
+			Kdmk:     foundOfferProdi.KodeMataKuliah,
+			IDJadwal: foundOfferProdi.Id,
+			NimDinus: nimDinus,
+			Sts:      "B", // B MAKSUNYA APA G PAHAM GA DI JELASIN JUGA DI
+			Sks:      foundOfferProdi.JumlahSKS,
+			Modul:    0,
+		}
+
+		if err = s.StudentStatusRepository.InsertKrs(ctx, tx, record); err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+
+		if err = s.StudentStatusRepository.InsertKrsLog(ctx, tx, nimDinus, record, 1); err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+
+		}
+
+		// TAMBAH JSISA
+		if err = tx.WithContext(ctx).
+			Model(&domain.JadwalTawar{}).
+			Where("id = ?", idSchedule).
+			UpdateColumn("jsisa", gorm.Expr("jsisa + ?", 1)).Error; err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrInternalServer, fmt.Errorf("gagal update j sisa"))
+
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return "SUCCESS ADD NEW SCHEDULE", nil
 
 }

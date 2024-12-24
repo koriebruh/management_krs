@@ -20,7 +20,8 @@ type StudentStatusRepository interface {
 	KrsOffersProdi(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string, kelompok string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
-	//InsertSchedule()
+	InsertKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, rec domain.KrsRecord, Aksi int8) error
+	InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error
 	//RemoveSchedule()
 	//LogSchedulePick()
 	//ValidationKrs()
@@ -355,4 +356,32 @@ func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *
 	}
 
 	return schedules, nil
+}
+
+func (s StudentStatusRepositoryImpl) InsertKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, rec domain.KrsRecord, Aksi int8) error {
+
+	recordLog := domain.KrsRecordLog{
+		IDKrs:    rec.ID,
+		NimDinus: nimDinus,
+		Kdmk:     rec.Kdmk,
+		Aksi:     Aksi,
+		IDJadwal: rec.IDJadwal,
+		IpAddr:   "",
+	}
+
+	if err := db.WithContext(ctx).Create(&recordLog).Error; err != nil {
+		return fmt.Errorf("err add to tabel record_log")
+	}
+
+	return nil
+}
+
+func (s StudentStatusRepositoryImpl) InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error {
+	fmt.Println(rec)
+	if err := db.WithContext(ctx).Create(&rec).Error; err != nil {
+		fmt.Println(err)
+		return fmt.Errorf("err add to tabel record")
+	}
+
+	return nil
 }

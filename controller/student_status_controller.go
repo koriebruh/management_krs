@@ -1,11 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"koriebruh/try/dto"
 	"koriebruh/try/helper"
 	"koriebruh/try/service"
 	"net/http"
+	"strconv"
 )
 
 type StudentStatusController interface {
@@ -19,6 +21,7 @@ type StudentStatusController interface {
 	KrsOffersProdi(ctx *fiber.Ctx) error
 	GetAllScores(ctx *fiber.Ctx) error
 	ScheduleConflicts(ctx *fiber.Ctx) error
+	InsertSchedule(ctx *fiber.Ctx) error
 }
 type StudentStatusControllerImpl struct {
 	service.StudentStatusService
@@ -190,5 +193,30 @@ func (c StudentStatusControllerImpl) ScheduleConflicts(ctx *fiber.Ctx) error {
 		Code:   http.StatusOK,
 		Status: "OK",
 		Data:   conflicts,
+	})
+}
+
+func (c StudentStatusControllerImpl) InsertSchedule(ctx *fiber.Ctx) error {
+	kodeTA := ctx.Query("kode-ta")
+	NimDinus := ctx.Locals("nim_dinus").(string)
+	params := ctx.Params("id")
+
+	idSchedule, err := strconv.Atoi(params)
+	if err != nil {
+		err = fmt.Errorf("%w: %v", helper.ErrNotFound, fmt.Errorf("err param"))
+		return helper.ErrResponse(ctx, err)
+	}
+
+	msg, err := c.StudentStatusService.InsertSchedule(ctx.Context(), NimDinus, kodeTA, idSchedule)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data: map[string]interface{}{
+			"message": msg,
+		},
 	})
 }

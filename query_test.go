@@ -423,10 +423,10 @@ func TestCheckScheduleConflict(t *testing.T) {
 
 func TestInsertSchedule(t *testing.T) {
 
-	nim := "020c6355071b91f8d3eea6442d968525"
-	kodeTA := "20232"
-	idSchduleUserInsert := 277345
-	prodi := "C12"
+	nim := "560b4d78fc163d57774e045317be842f"
+	kodeTA := "275486"
+	idSchduleUserInsert := 283180 //277345
+	prodi := "A11"
 
 	db := conf.InitDB()
 	statusRepository := repository.NewStudentStatusRepository()
