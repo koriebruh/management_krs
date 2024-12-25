@@ -23,6 +23,7 @@ type StudentStatusController interface {
 	ScheduleConflicts(ctx *fiber.Ctx) error
 	InsertSchedule(ctx *fiber.Ctx) error
 	GetKrsLog(ctx *fiber.Ctx) error
+	DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error
 }
 type StudentStatusControllerImpl struct {
 	service.StudentStatusService
@@ -236,4 +237,30 @@ func (c StudentStatusControllerImpl) GetKrsLog(ctx *fiber.Ctx) error {
 		Status: "OK",
 		Data:   log,
 	})
+}
+
+func (c StudentStatusControllerImpl) DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error {
+
+	NimDinus := ctx.Locals("nim_dinus").(string)
+	params := ctx.Params("id")
+
+	idKrs, err := strconv.Atoi(params)
+	if err != nil {
+		err = fmt.Errorf("%w: %v", helper.ErrNotFound, fmt.Errorf("err param"))
+		return helper.ErrResponse(ctx, err)
+	}
+
+	msg, err := c.StudentStatusService.DeleteKrsRecByIdKrs(ctx.Context(), NimDinus, idKrs)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data: map[string]interface{}{
+			"message": msg,
+		},
+	})
+
 }

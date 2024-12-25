@@ -48,6 +48,7 @@ func main() {
 	authorized.Get("api/students/schedule-prodi", studentStatusController.KrsOffersProdi)       // done
 	authorized.Post("api/students/schedule/:id", studentStatusController.InsertSchedule)        // done
 	authorized.Get("api/students/log", studentStatusController.GetKrsLog)                       // done
+	authorized.Delete("api/students/krs/:id", studentStatusController.DeleteKrsRecByIdKrs)      // done
 
 	//KRS yg user pilih itu krs_record
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)

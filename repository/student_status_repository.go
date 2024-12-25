@@ -133,7 +133,7 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 
 	err := db.WithContext(ctx).Model(&domain.JadwalTawar{}).
 		Select(`
-        jadwal_tawar.id AS id,
+        DISTINCT jadwal_tawar.id AS id,
 		krs_record.id AS krs_record_id,
         jadwal_tawar.ta AS tahun_ajaran,
         jadwal_tawar.kdmk AS kode_mata_kuliah,

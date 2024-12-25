@@ -26,6 +26,7 @@ type StudentStatusService interface {
 	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error)
 	GetKrsLog(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
+	DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int) (string, error)
 }
 
 type StudentStatusServicesImpl struct {
@@ -469,4 +470,44 @@ func (s StudentStatusServicesImpl) GetKrsLog(ctx context.Context, nimDinus strin
 	}
 
 	return results, nil
+}
+
+func (s StudentStatusServicesImpl) DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int) (string, error) {
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		var krsRec domain.KrsRecord
+		if err := tx.WithContext(ctx).Where("id=?", idKrs).First(&krsRec).Error; err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("wrong id_krs %d not found", idKrs))
+		}
+		//ADD TO KRS LOG
+		if err := s.StudentStatusRepository.InsertKrsLog(ctx, tx, nimDinus, krsRec, 0); err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrInternalServer, err)
+		}
+		idSchedule := krsRec.ID
+
+		//VALIDASI YG SUDAH DI VALUDASI TIDAK BISA DELETE
+		statusKRS, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		if statusKRS.Validate == "Validated" {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+
+		// MENGAHPUS KRS RECORD, INI SOFT DELETE
+		if err := tx.WithContext(ctx).Delete(&krsRec).Error; err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrInternalServer, fmt.Errorf("err delete"))
+		}
+
+		// MENGURAGI Jsisakan di batal kan krs nya
+		if err := tx.WithContext(ctx).
+			Model(&domain.JadwalTawar{}).
+			Where("id = ?", idSchedule).
+			UpdateColumn("jsisa", gorm.Expr("jsisa - ?", 1)).Error; err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrInternalServer, fmt.Errorf("err update jsisa"))
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("success delete shecudle where id krs = %d", idKrs), nil
 }
