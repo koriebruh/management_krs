@@ -2,6 +2,7 @@ package dto
 
 type SelectedKrs struct {
 	ID             int    `json:"id"`               // ID Jadwal Tawar
+	KrsRecordId    int    `json:"krs_record_id"`    // ID Jadwal Tawar
 	TahunAjaran    string `json:"tahun_ajaran"`     // Tahun Ajaran
 	KodeMataKuliah string `json:"kode_mata_kuliah"` // Kode Mata Kuliah
 	Kelompok       string `json:"kelompok"`         // Kelompok

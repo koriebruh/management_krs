@@ -597,3 +597,50 @@ func TestGetLogBang(t *testing.T) {
 
 	fmt.Println(results)
 }
+
+func TestDeleteKrsYGDIpilh(t *testing.T) {
+
+	//BETER SEND ID KRS REC AJA udah tak tambah
+
+	db := conf.InitDB()
+	statusRepository := repository.NewStudentStatusRepository()
+
+	nim := "9b77bd5b68ed9c7887a81905016731d2"
+	krsRecId := 4004068
+
+	err := db.Transaction(func(tx *gorm.DB) error {
+		var krsRrec domain.KrsRecord
+		if err := tx.WithContext(ctx).Where("id=?", krsRecId).First(&krsRrec).Error; err != nil {
+			panic("RECORD GA KETEMU")
+		}
+		if err := statusRepository.InsertKrsLog(ctx, tx, nim, krsRrec, 0); err != nil {
+			panic("ERROR ADD LOG")
+		}
+		idSchedule := krsRrec.ID
+
+		///validasi jika sudah validasi tidaak bisa input
+		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim)
+		if statusKRS.Validate == "Validated" {
+			panic("SUDAH DI VALIDASI TIDAK DELETE KRS")
+		}
+
+		// MENGAHPUS KRS RECORD, INI SOFT DELETE
+		if err := tx.WithContext(ctx).Delete(&krsRrec).Error; err != nil {
+			panic("GAGAL DELETE REC")
+		}
+
+		// MENGURAGI Jsisakan di batal kan krs nya
+		if err := tx.WithContext(ctx).
+			Model(&domain.JadwalTawar{}).
+			Where("id = ?", idSchedule).
+			UpdateColumn("jsisa", gorm.Expr("jsisa - ?", 1)).Error; err != nil {
+			panic("Gagal mengupdate jsisa")
+		}
+		return nil
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+}

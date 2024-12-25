@@ -1,5 +1,7 @@
 package domain
 
+import "gorm.io/gorm"
+
 type KrsRecord struct {
 	ID          int             `gorm:"primaryKey;autoIncrement=false"`
 	TA          int             `gorm:"not null;default:0"`
@@ -13,6 +15,7 @@ type KrsRecord struct {
 	MataKuliah  MatkulKurikulum `gorm:"foreignKey:Kdmk;references:Kdmk"`
 	Jadwal      JadwalTawar     `gorm:"foreignKey:IDJadwal;references:ID"`
 	Mahasiswa   MahasiswaDinus  `gorm:"foreignKey:NimDinus;references:NimDinus"`
+	DeletedAt   gorm.DeletedAt  `gorm:"index"`
 }
 
 func (k *KrsRecord) TableName() string {

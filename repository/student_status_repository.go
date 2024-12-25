@@ -134,6 +134,7 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 	err := db.WithContext(ctx).Model(&domain.JadwalTawar{}).
 		Select(`
         jadwal_tawar.id AS id,
+		krs_record.id AS krs_record_id,
         jadwal_tawar.ta AS tahun_ajaran,
         jadwal_tawar.kdmk AS kode_mata_kuliah,
         jadwal_tawar.klpk AS kelompok,
@@ -149,7 +150,7 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 		Joins("LEFT JOIN sesi_kuliah ON jadwal_tawar.id_sesi1 = sesi_kuliah.id").
 		Joins("LEFT JOIN ruang ON jadwal_tawar.id_ruang1 = ruang.id").
 		Joins("JOIN krs_record ON krs_record.kdmk = matkul_kurikulum.kdmk").
-		Where("jadwal_tawar.ta IS NOT NULL AND krs_record.nim_dinus = ?", nimDinus).
+		Where("jadwal_tawar.ta IS NOT NULL AND krs_record.nim_dinus = ? AND krs_record.deleted_at IS NULL", nimDinus).
 		Scan(&results).Error
 
 	if err != nil {
