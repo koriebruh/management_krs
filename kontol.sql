@@ -352,38 +352,32 @@ WHERE jt.ta IS NOT NULL -- Pastikan hanya menampilkan data valid
 ORDER BY jt.ta, mk.nmmk;
 
 
-SELECT DISTINCT
-    jt.ta AS tahun_ajaran,
-    jt.kdmk AS kode_mata_kuiah,
-    jt.klpk AS kelompok,
-    mk.nmmk AS nama_mata_kuliah,
-    mk.sks AS jumlah_sks,
-    h.nama AS hari,
-    sk.jam_mulai,
-    sk.jam_selesai,
-    r.nama AS ruang,
-    CASE
-        WHEN EXISTS (
-            SELECT 1
-            FROM daftar_nilai dn
-            WHERE dn.kdmk = jt.kdmk
-              AND dn.nl = 'A'
-              AND dn.nim_dinus = '647e27c32c8935273e876a457b81b186'
-        ) THEN 'Tidak Bisa'
-        ELSE 'Bisa'
-        END AS status_pemilihan
-FROM
-    jadwal_tawar jt
-        LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-        LEFT JOIN hari h ON jt.id_hari1 = h.id
-        LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
-        LEFT JOIN ruang r ON jt.id_ruang1 = r.id
-WHERE
-    jt.ta IS NOT NULL     -- Pastikan hanya menampilkan data valid
+SELECT DISTINCT jt.ta   AS tahun_ajaran,
+                jt.kdmk AS kode_mata_kuiah,
+                jt.klpk AS kelompok,
+                mk.nmmk AS nama_mata_kuliah,
+                mk.sks  AS jumlah_sks,
+                h.nama  AS hari,
+                sk.jam_mulai,
+                sk.jam_selesai,
+                r.nama  AS ruang,
+                CASE
+                    WHEN EXISTS (SELECT 1
+                                 FROM daftar_nilai dn
+                                 WHERE dn.kdmk = jt.kdmk
+                                   AND dn.nl = 'A'
+                                   AND dn.nim_dinus = '647e27c32c8935273e876a457b81b186') THEN 'Tidak Bisa'
+                    ELSE 'Bisa'
+                    END AS status_pemilihan
+FROM jadwal_tawar jt
+         LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+         LEFT JOIN hari h ON jt.id_hari1 = h.id
+         LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+         LEFT JOIN ruang r ON jt.id_ruang1 = r.id
+WHERE jt.ta IS NOT NULL   -- Pastikan hanya menampilkan data valid
   AND jt.klpk LIKE 'B11%' -- Hanya tampilkan kelompok yang dimulai dengan 'B11'
   AND jt.ta = '20232'
-ORDER BY
-    jt.ta, mk.nmmk;
+ORDER BY jt.ta, mk.nmmk;
 
 
 select *
@@ -521,24 +515,31 @@ WHERE jadwal_tawar.id = 275486;
 
 
 
-SELECT DISTINCT
-    jt.id,
-    jt.ta AS tahun_ajaran,
-    jt.kdmk AS kode_mata_kuiah,
-    jt.klpk AS kelompok,
-    mk.nmmk AS nama_mata_kuliah,
-    mk.sks AS jumlah_sks,
-    h.nama AS hari,
-    sk.jam_mulai,
-    sk.jam_selesai,
-    r.nama AS ruang
-FROM
-    jadwal_tawar jt
-        LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
-        LEFT JOIN hari h ON jt.id_hari1 = h.id
-        LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
-        LEFT JOIN ruang r ON jt.id_ruang1 = r.id
-        JOIN krs_record kr On kr.kdmk = mk.kdmk
-WHERE
-    jt.ta IS NOT NULL     -- Pastikan hanya menampilkan data valid
-  AND  nim_dinus = '560b4d78fc163d57774e045317be842f'
+SELECT DISTINCT jt.id,
+                jt.ta   AS tahun_ajaran,
+                jt.kdmk AS kode_mata_kuiah,
+                jt.klpk AS kelompok,
+                mk.nmmk AS nama_mata_kuliah,
+                mk.sks  AS jumlah_sks,
+                h.nama  AS hari,
+                sk.jam_mulai,
+                sk.jam_selesai,
+                r.nama  AS ruang
+FROM jadwal_tawar jt
+         LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
+         LEFT JOIN hari h ON jt.id_hari1 = h.id
+         LEFT JOIN sesi_kuliah sk ON sk.id = jt.id_sesi1
+         LEFT JOIN ruang r ON jt.id_ruang1 = r.id
+         JOIN krs_record kr On kr.kdmk = mk.kdmk
+WHERE jt.ta IS NOT NULL -- Pastikan hanya menampilkan data valid
+  AND nim_dinus = '560b4d78fc163d57774e045317be842f';
+
+
+SELECT krl.*
+FROM krs_record_log krl
+         left JOIN
+     krs_record kr ON krl.id_krs = kr.id
+WHERE kr.ta = '20232'
+  AND kr.nim_dinus = '9b77bd5b68ed9c7887a81905016731d2';
+
+select * from krs_record_log where nim_dinus = '9b77bd5b68ed9c7887a81905016731d2';

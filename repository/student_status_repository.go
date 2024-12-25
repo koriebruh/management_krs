@@ -23,7 +23,7 @@ type StudentStatusRepository interface {
 	InsertKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, rec domain.KrsRecord, Aksi int8) error
 	InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error
 	//RemoveSchedule()
-	//LogSchedulePick()
+	GetKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
 	//ValidationKrs()
 }
 
@@ -395,4 +395,20 @@ func (s StudentStatusRepositoryImpl) InsertKrs(ctx context.Context, db *gorm.DB,
 	}
 
 	return nil
+}
+
+func (s StudentStatusRepositoryImpl) GetKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error) {
+
+	var log []dto.KrsLogRes
+	if err := db.WithContext(ctx).Raw(`
+        SELECT krl.*
+        FROM krs_record_log krl
+        LEFT JOIN krs_record kr ON krl.id_krs = kr.id
+        WHERE kr.ta = ? AND kr.nim_dinus = ?;
+    `, kodeTA, nimDinus).Scan(&log).Error; err != nil {
+		return nil, fmt.Errorf("err get record where nim %v and ta %v", nimDinus, kodeTA)
+	}
+
+	return log, nil
+
 }

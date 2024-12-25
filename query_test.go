@@ -569,3 +569,31 @@ func TestInsertSchedule(t *testing.T) {
 		panic(err)
 	}
 }
+
+func TestGetLogBang(t *testing.T) {
+	db := conf.InitDB()
+
+	kodeTA := "20232"
+	nimDinus := "9b77bd5b68ed9c7887a81905016731d2"
+
+	var results []struct {
+		IdRec          int    `gorm:"column:id_krs" json:"id_rec"`
+		NimDinus       string `gorm:"column:nim_dinus" json:"nim_dinus"`
+		KodeMataKuliah string `gorm:"column:kdmk" json:"kode_mata_kuliah"`
+		Aksi           int8   `gorm:"column:aksi" json:"aksi"`
+		IdJadwal       int    `gorm:"column:id_jadwal" json:"id_jadwal"`
+		IpAddress      int    `gorm:"column:ip_addr" json:"ip_address"`
+		LastUpdate     string `gorm:"column:last_update" json:"last_update"`
+	}
+
+	if err := db.WithContext(ctx).Raw(`
+        SELECT krl.*
+        FROM krs_record_log krl
+        LEFT JOIN krs_record kr ON krl.id_krs = kr.id
+        WHERE kr.ta = ? AND kr.nim_dinus = ?;
+    `, kodeTA, nimDinus).Scan(&results).Error; err != nil {
+		panic(err) // Hapus return di sini
+	}
+
+	fmt.Println(results)
+}

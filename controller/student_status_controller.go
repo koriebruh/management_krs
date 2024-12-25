@@ -22,6 +22,7 @@ type StudentStatusController interface {
 	GetAllScores(ctx *fiber.Ctx) error
 	ScheduleConflicts(ctx *fiber.Ctx) error
 	InsertSchedule(ctx *fiber.Ctx) error
+	GetKrsLog(ctx *fiber.Ctx) error
 }
 type StudentStatusControllerImpl struct {
 	service.StudentStatusService
@@ -218,5 +219,21 @@ func (c StudentStatusControllerImpl) InsertSchedule(ctx *fiber.Ctx) error {
 		Data: map[string]interface{}{
 			"message": msg,
 		},
+	})
+}
+
+func (c StudentStatusControllerImpl) GetKrsLog(ctx *fiber.Ctx) error {
+	kodeTA := ctx.Query("kode-ta")
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	log, err := c.StudentStatusService.GetKrsLog(ctx.Context(), NimDinus, kodeTA)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data:   log,
 	})
 }

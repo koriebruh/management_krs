@@ -25,6 +25,7 @@ type StudentStatusService interface {
 	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error)
+	GetKrsLog(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
 }
 
 type StudentStatusServicesImpl struct {
@@ -442,4 +443,30 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 
 	return "SUCCESS ADD NEW SCHEDULE", nil
 
+}
+
+func (s StudentStatusServicesImpl) GetKrsLog(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error) {
+
+	var results []dto.KrsLogRes
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+		_, err := s.StudentStatusRepository.CheckUserExist(ctx, tx, nimDinus)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+
+		log, err := s.StudentStatusRepository.GetKrsLog(ctx, tx, nimDinus, kodeTA)
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
+		}
+
+		results = log
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
 }
