@@ -11,6 +11,7 @@ import (
 	"koriebruh/try/repository"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type StudentStatusService interface {
@@ -27,6 +28,7 @@ type StudentStatusService interface {
 	InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error)
 	GetKrsLog(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
 	DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int) (string, error)
+	UpdateValidate(ctx context.Context, kodeTA string, req dto.UpdateValidateReq) (string, error)
 }
 
 type StudentStatusServicesImpl struct {
@@ -510,4 +512,37 @@ func (s StudentStatusServicesImpl) DeleteKrsRecByIdKrs(ctx context.Context, nimD
 	}
 
 	return fmt.Sprintf("success delete shecudle where id krs = %d", idKrs), nil
+}
+
+func (s StudentStatusServicesImpl) UpdateValidate(ctx context.Context, nimDinus string, req dto.UpdateValidateReq) (string, error) {
+	if err := s.Validate.Struct(req); err != nil {
+		return "", fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+	}
+
+	err := s.DB.Transaction(func(tx *gorm.DB) error {
+
+		if err := s.StudentStatusRepository.CheckTA(ctx, tx, strconv.Itoa(req.TA)); err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+
+		data := domain.ValidasiKrsMhs{
+			NimDinus: nimDinus,
+			JobDate:  time.Now(),
+			JobHost:  req.JobHost,
+			JobAgent: req.JobAgent,
+			TA:       req.TA,
+		}
+
+		if err := s.StudentStatusRepository.UpdateValidate(ctx, tx, data); err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return "success update validate status", nil
 }

@@ -22,9 +22,9 @@ type StudentStatusRepository interface {
 	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	InsertKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, rec domain.KrsRecord, Aksi int8) error
 	InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error
-	//RemoveSchedule()
 	GetKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
-	//ValidationKrs()
+	UpdateValidate(ctx context.Context, db *gorm.DB, mhs domain.ValidasiKrsMhs) error
+	CheckTA(ctx context.Context, db *gorm.DB, kodeTA string) error
 }
 
 type StudentStatusRepositoryImpl struct {
@@ -412,4 +412,20 @@ func (s StudentStatusRepositoryImpl) GetKrsLog(ctx context.Context, db *gorm.DB,
 
 	return log, nil
 
+}
+
+func (s StudentStatusRepositoryImpl) UpdateValidate(ctx context.Context, db *gorm.DB, mhs domain.ValidasiKrsMhs) error {
+	if err := db.WithContext(ctx).Save(&mhs).Error; err != nil {
+		return fmt.Errorf("err update validation status")
+	}
+	return nil
+}
+
+func (s StudentStatusRepositoryImpl) CheckTA(ctx context.Context, db *gorm.DB, kodeTA string) error {
+	ta := domain.TahunAjaran{}
+	if err := db.WithContext(ctx).Where("kode =?", kodeTA).First(&ta).Error; err != nil {
+		return fmt.Errorf("kode %v not register", ta)
+	}
+
+	return nil
 }

@@ -42,13 +42,14 @@ func main() {
 	authorized.Put("api/students/class", studentStatusController.SetClassTime)                  // done
 	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)                   // done
 	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)              // done
-	authorized.Get("api/students/krs-status", studentStatusController.StatusKRSMhs)             // done
+	authorized.Get("api/students/krs-status", studentStatusController.StatusKRSMhs)             // ntar tambaha param kodeTA
 	authorized.Get("api/students/scores", studentStatusController.GetAllScores)                 // done
 	authorized.Get("api/students/schedule-conflict", studentStatusController.ScheduleConflicts) // done
 	authorized.Get("api/students/schedule-prodi", studentStatusController.KrsOffersProdi)       // done
 	authorized.Post("api/students/schedule/:id", studentStatusController.InsertSchedule)        // done
 	authorized.Get("api/students/log", studentStatusController.GetKrsLog)                       // done
 	authorized.Delete("api/students/krs/:id", studentStatusController.DeleteKrsRecByIdKrs)      // done
+	authorized.Put("api/students/validate", studentStatusController.UpdateValidate)             // done
 
 	//KRS yg user pilih itu krs_record
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)

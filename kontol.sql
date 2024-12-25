@@ -548,3 +548,13 @@ select * from krs_record_log where nim_dinus = '9b77bd5b68ed9c7887a81905016731d2
 SELECT * FROM validasi_krs_mhs;
 SELECT * FROM krs_record where nim_dinus = '9b77bd5b68ed9c7887a81905016731d2';
 SELECT * FROM krs_record_log where nim_dinus = '9b77bd5b68ed9c7887a81905016731d2';
+
+
+select * from validasi_krs_mhs where job_host = 'haha';
+desc validasi_krs_mhs;
+
+SELECT * FROM `tahun_ajaran` WHERE kode ='20232' ORDER BY `tahun_ajaran`.`id` LIMIT 1
+;
+2024-02-20 15:01:19 validate
+2024-12-25 10:34:43 not validate
+select * from validasi_krs_mhs where job_host = 'haha';

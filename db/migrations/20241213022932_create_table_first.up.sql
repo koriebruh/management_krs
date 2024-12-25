@@ -351,3 +351,7 @@ ALTER TABLE `matkul_kurikulum`
     MODIFY `kur_aktif` TINYINT(1);
 
 ALTER TABLE krs_record_log RENAME COLUMN lastUpdate TO last_update;
+
+-- untuk soft delete
+ALTER TABLE `krs_record`
+    ADD COLUMN `deleted_at` DATETIME DEFAULT NULL;

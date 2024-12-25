@@ -24,6 +24,7 @@ type StudentStatusController interface {
 	InsertSchedule(ctx *fiber.Ctx) error
 	GetKrsLog(ctx *fiber.Ctx) error
 	DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error
+	UpdateValidate(ctx *fiber.Ctx) error
 }
 type StudentStatusControllerImpl struct {
 	service.StudentStatusService
@@ -263,4 +264,25 @@ func (c StudentStatusControllerImpl) DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error {
 		},
 	})
 
+}
+
+func (c StudentStatusControllerImpl) UpdateValidate(ctx *fiber.Ctx) error {
+	var req dto.UpdateValidateReq
+	if err := ctx.BodyParser(&req); err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+	NimDinus := ctx.Locals("nim_dinus").(string)
+
+	msg, err := c.StudentStatusService.UpdateValidate(ctx.Context(), NimDinus, req)
+	if err != nil {
+		return helper.ErrResponse(ctx, err)
+	}
+
+	return ctx.Status(http.StatusOK).JSON(dto.WebResponse{
+		Code:   http.StatusOK,
+		Status: "OK",
+		Data: map[string]interface{}{
+			"message": msg,
+		},
+	})
 }
