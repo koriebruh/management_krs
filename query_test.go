@@ -440,7 +440,7 @@ func TestInsertSchedule(t *testing.T) {
 		}
 
 		//KRS yang sudah tervalidasi tidak dapat insert lagi
-		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim)
+		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim, kodeTA)
 		if statusKRS.Validate == "Validated" {
 			panic("SUDAH DI VALIDASI TIDAK BISA INSERT LAGI")
 		}
@@ -607,6 +607,7 @@ func TestDeleteKrsYGDIpilh(t *testing.T) {
 
 	nim := "9b77bd5b68ed9c7887a81905016731d2"
 	krsRecId := 4004068
+	kodeTA := "275486"
 
 	err := db.Transaction(func(tx *gorm.DB) error {
 		var krsRrec domain.KrsRecord
@@ -619,7 +620,7 @@ func TestDeleteKrsYGDIpilh(t *testing.T) {
 		idSchedule := krsRrec.ID
 
 		///validasi jika sudah validasi tidaak bisa input
-		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim)
+		statusKRS, _ := statusRepository.StatusKRS(ctx, tx, nim, kodeTA)
 		if statusKRS.Validate == "Validated" {
 			panic("SUDAH DI VALIDASI TIDAK DELETE KRS")
 		}

@@ -655,3 +655,7 @@ FROM (
          UNION
          SELECT nim_dinus FROM tagihan_mhs
      ) AS combined_nim_dinus;
+
+
+SELECT COUNT(*) AS total
+FROM daftar_nilai;

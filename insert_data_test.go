@@ -51,34 +51,49 @@ func TestInsertMahasiswaDinus(t *testing.T) {
 	records, err := reader.ReadAll()
 	IfErrNotNil(err)
 
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5)
+
 	for i, record := range records {
 		if i == 0 {
-			continue
+			continue // Skip header
 		}
 		if len(record) < 5 {
 			log.Printf("Skipping line %d due to insufficient columns: %v", i, record)
 			continue
 		}
 
-		password, _ := bcrypt.GenerateFromPassword([]byte(record[5]), bcrypt.DefaultCost)
+		wg.Add(1)
+		sem <- struct{}{} // Mengambil slot goroutine
 
-		mhsDinus := domain.MahasiswaDinus{
-			NimDinus: record[0],
-			TaMasuk:  int(atoi(record[1])),
-			Prodi:    record[2],
-			PassMhs:  string(password),
-			Kelas:    atoi(record[4]),
-			AkdmStat: record[3],
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem // Melepaskan slot goroutine setelah selesai
+				wg.Done()
+			}()
 
-		if err := db.Create(&mhsDinus).Error; err != nil {
-			log.Fatalf("err in line %v and err bcs %e", i, err)
-		}
+			password, _ := bcrypt.GenerateFromPassword([]byte(record[5]), bcrypt.DefaultCost)
 
+			mhsDinus := domain.MahasiswaDinus{
+				NimDinus: record[0],
+				TaMasuk:  int(atoi(record[1])),
+				Prodi:    record[2],
+				PassMhs:  string(password),
+				Kelas:    atoi(record[4]),
+				AkdmStat: record[3],
+			}
+
+			if err := db.Create(&mhsDinus).Error; err != nil {
+				log.Printf("Error in line %d: %v", i, err)
+				return
+			}
+
+			log.Printf("Insert successful for NIM %s at line %d", record[0], i)
+		}(i, record)
 	}
 
+	wg.Wait() // Menunggu semua goroutine selesai
 	log.Println("YEY SUCCESS")
-
 }
 
 func TestInsertMatkulkurikulum(t *testing.T) {
@@ -321,45 +336,61 @@ func TestTagihanMhs(t *testing.T) {
 
 	const layout = "2006-01-02 15:04:05.000"
 
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5)
+
 	for i, record := range records {
 		if i == 0 {
 			continue
 		}
 
-		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[2]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[2], i)
-			continue
-		}
+		wg.Add(1)
+		sem <- struct{}{}
 
-		sppBayarDate, err := time.Parse(layout, record[4])
-		if err != nil {
-			log.Fatalf("Error parsing date in line %v: %v", i, err)
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem
+				wg.Done()
+			}()
 
-		tagihanMhs := domain.TagihanMhs{
-			ID:            atoi(record[0]),
-			TA:            atoi(record[1]),
-			NimDinus:      record[2],
-			SppBayar:      atoi(record[3]),
-			SppBayarDate:  sppBayarDate,
-			SppHost:       record[5],
-			SppStatus:     atoi(record[6]),
-			SppDispensasi: atoi(record[7]),
-			SppBank:       record[8],
-			SppTransaksi:  record[9],
-		}
+			// BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+			var mahasiswa domain.MahasiswaDinus
+			err := db.Where("nim_dinus = ?", record[2]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[2], i)
+				return
+			}
 
-		// Insert ke database
-		if err := db.Create(&tagihanMhs).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
+			sppBayarDate, err := time.Parse(layout, record[4])
+			if err != nil {
+				log.Printf("Error parsing date in line %v: %v", i, err)
+				return
+			}
 
-		log.Println("insert index ", i)
+			tagihanMhs := domain.TagihanMhs{
+				ID:            atoi(record[0]),
+				TA:            atoi(record[1]),
+				NimDinus:      record[2],
+				SppBayar:      atoi(record[3]),
+				SppBayarDate:  sppBayarDate,
+				SppHost:       record[5],
+				SppStatus:     atoi(record[6]),
+				SppDispensasi: atoi(record[7]),
+				SppBank:       record[8],
+				SppTransaksi:  record[9],
+			}
+
+			// Insert ke database
+			if err := db.Create(&tagihanMhs).Error; err != nil {
+				log.Printf("Error in line %v: %v", i, err)
+				return
+			}
+
+			log.Printf("Insert successful for NIM %s at line %d", record[2], i)
+		}(i, record)
 	}
 
+	wg.Wait()
 	log.Println("YEY SUCCESS")
 }
 
@@ -377,53 +408,69 @@ func TestIpSemester(t *testing.T) {
 
 	const layout = "2006-01-02 15:04:05.000"
 
+	var wg sync.WaitGroup         // Membuat WaitGroup untuk menunggu semua goroutine selesai
+	sem := make(chan struct{}, 5) // Batas maksimal 5 goroutine concurrent
+
 	for i, record := range records {
 		if i == 0 {
 			continue
 		}
 
-		if atoi(record[1]) == 20231 && record[5] == "95cedfff35b96393991dd55e982120c2" {
-			fmt.Println("harus nya ke insert ini")
-		}
+		wg.Add(1)
+		sem <- struct{}{} // Mengambil slot goroutine
 
-		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
-			continue
-		}
-		log.Printf("NIM INI KETEMU %v", record[5])
+		go func(i int, record []string) {
+			defer func() {
+				<-sem // Melepaskan slot goroutine setelah selesai
+				wg.Done()
+			}()
 
-		var kodeExist domain.TahunAjaran
-		err = db.Where("kode = ?", record[1]).First(&kodeExist).Error
-		if err != nil {
-			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[1], i)
-			continue
-		}
-		log.Println()
+			if atoi(record[1]) == 20231 && record[5] == "95cedfff35b96393991dd55e982120c2" {
+				fmt.Println("harus nya ke insert ini")
+			}
 
-		lu, err := time.Parse(layout, record[4])
-		if err != nil {
-			log.Fatalf("Error parsing date in line %v: %v", i, err)
-		}
+			// BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+			var mahasiswa domain.MahasiswaDinus
+			err := db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
+				return
+			}
+			log.Printf("NIM INI KETEMU %v", record[5])
 
-		ipSemester := domain.IpSemester{
-			ID:         atoi(record[0]),
-			TA:         atoi(record[1]),
-			Sks:        atoi(record[2]),
-			Ips:        record[3],
-			LastUpdate: lu,
-			NimDinus:   record[5],
-		}
+			var kodeExist domain.TahunAjaran
+			err = db.Where("kode = ?", record[1]).First(&kodeExist).Error
+			if err != nil {
+				log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[1], i)
+				return
+			}
+			log.Println()
 
-		// Insert ke database
-		if err := db.Create(&ipSemester).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
-		log.Println("insert index ", i)
+			lu, err := time.Parse(layout, record[4])
+			if err != nil {
+				log.Printf("Error parsing date in line %v: %v", i, err)
+				return
+			}
+
+			ipSemester := domain.IpSemester{
+				ID:         atoi(record[0]),
+				TA:         atoi(record[1]),
+				Sks:        atoi(record[2]),
+				Ips:        record[3],
+				LastUpdate: lu,
+				NimDinus:   record[5],
+			}
+
+			// Insert ke database
+			if err := db.Create(&ipSemester).Error; err != nil {
+				log.Printf("Error in line %v: %v", i, err)
+				return
+			}
+			log.Printf("Insert successful for NIM %s at line %d", record[5], i)
+		}(i, record)
 	}
 
+	wg.Wait() // Menunggu semua goroutine selesai
 	log.Println("YEY SUCCESS")
 }
 
@@ -537,39 +584,55 @@ func TestHerregistMhs(t *testing.T) {
 
 	const layout = "2006-01-02 15:04:05.000"
 
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5)
+
 	for i, record := range records {
 		if i == 0 {
 			continue
 		}
 
-		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
-			continue
-		}
+		wg.Add(1)
+		sem <- struct{}{}
 
-		timeReg, err := time.Parse(layout, record[3])
-		if err != nil {
-			log.Fatalf("Error parsing date in line %v: %v", i, err)
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem // Melepaskan slot goroutine setelah selesai
+				wg.Done()
+			}()
 
-		herregistMahasiswa := domain.HerregistMahasiswa{
-			ID:       atoi(record[0]),
-			NimDinus: record[1],
-			TA:       atoi(record[2]),
-			DateReg:  timeReg,
-		}
+			// BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
+			var mahasiswa domain.MahasiswaDinus
+			err := db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
+				return
+			}
 
-		// Insert ke database
-		if err := db.Create(&herregistMahasiswa).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
+			timeReg, err := time.Parse(layout, record[3])
+			if err != nil {
+				log.Printf("Error parsing date in line %v: %v", i, err)
+				return
+			}
 
-		log.Println("insert index ", i)
+			herregistMahasiswa := domain.HerregistMahasiswa{
+				ID:       atoi(record[0]),
+				NimDinus: record[1],
+				TA:       atoi(record[2]),
+				DateReg:  timeReg,
+			}
+
+			// Insert ke database
+			if err := db.Create(&herregistMahasiswa).Error; err != nil {
+				log.Printf("Error in line %v: %v", i, err)
+				return
+			}
+
+			log.Printf("Insert successful for NIM %s at line %d", record[1], i)
+		}(i, record)
 	}
 
+	wg.Wait() // Menunggu semua goroutine selesai
 	log.Println("YEY SUCCESS")
 }
 
@@ -624,35 +687,48 @@ func TestDaftarNilai(t *testing.T) {
 	records, err := reader.ReadAll()
 	IfErrNotNil(err)
 
+	var wg sync.WaitGroup
+	sem := make(chan struct{}, 5)
+
 	for i, record := range records {
 		if i == 0 {
 			continue
 		}
 
-		//BUAT NGESEKIP DATA YG TOLOL NIM NYA GA ADA DI TABEL mahasiswa_dinus
-		var mahasiswa domain.MahasiswaDinus
-		err = db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
-		if err != nil {
-			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
-			continue
-		}
+		wg.Add(1)
+		sem <- struct{}{}
 
-		daftarNilai := domain.DaftarNilai{
-			ID:       atoi(record[0]),
-			NimDinus: record[1],
-			Kdmk:     record[2],
-			Nl:       record[3],
-			Hide:     int16(atoi(record[4])),
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem
+				wg.Done()
+			}()
 
-		// Insert ke database
-		if err := db.Create(&daftarNilai).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
+			var mahasiswa domain.MahasiswaDinus
+			err := db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
+			if err != nil {
+				log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[1], i)
+				return
+			}
 
-		log.Println("insert index ", i)
+			daftarNilai := domain.DaftarNilai{
+				ID:       atoi(record[0]),
+				NimDinus: record[1],
+				Kdmk:     record[2],
+				Nl:       record[3],
+				Hide:     int16(atoi(record[4])),
+			}
+
+			if err := db.Create(&daftarNilai).Error; err != nil {
+				log.Printf("Error in line %v: %v", i, err)
+				return
+			}
+
+			log.Printf("Insert successful for NIM %s at line %d", record[1], i)
+		}(i, record)
 	}
 
+	wg.Wait()
 	log.Println("YEY SUCCESS")
 }
 
@@ -989,74 +1065,6 @@ func TestKrsRecord(t *testing.T) {
 	log.Println("YEY SUCCESS")
 }
 
-//func TestKrsRecordLog(t *testing.T) {
-//	db := conf.InitDB()
-//	file, err := os.Open("data_krs/krs_record_log.csv")
-//	IfErrNotNil(err)
-//	defer file.Close()
-//
-//	reader := csv.NewReader(file)
-//	records, err := reader.ReadAll()
-//	IfErrNotNil(err)
-//
-//	const layout = "2006-01-02 15:04:05.000"
-//
-//	for i, record := range records {
-//		if i == 0 {
-//			continue
-//		}
-//
-//		//CHECK NIM_DINUS
-//		var mahasiswa domain.MahasiswaDinus
-//		err = db.Where("nim_dinus = ?", record[5]).First(&mahasiswa).Error
-//		if err != nil {
-//			log.Printf("NIM %s not found in mahasiswa_dinus, skipping line %v", record[5], i)
-//			continue
-//		}
-//
-//		var kdmkExist domain.MatkulKurikulum
-//		if err := db.Where("kdmk = ?", record[1]).First(&kdmkExist).Error; err != nil {
-//			log.Printf("kdmk %s not found in matkul_kurikulum, skipping line %v", record[1], i)
-//			continue
-//		}
-//
-//		var idKrsExist domain.KrsRecord
-//		if err := db.Where("id = ?", record[0]).First(&idKrsExist).Error; err != nil {
-//			log.Printf("KrsID %s not found in tahun_ajaran, skipping line %v", record[0], i)
-//			continue
-//		}
-//
-//		var KrsIdExist domain.KrsRecordLog
-//		if err := db.Where("id = ?", record[0]).First(&KrsIdExist).Error; err != nil {
-//			log.Printf("KODE %s not found in tahun_ajaran, skipping line %v", record[0], i)
-//			continue
-//		}
-//
-//		LastUpdate, err := time.Parse(layout, record[4])
-//		if err != nil {
-//			log.Fatalf("Error parsing date in line %v: %v", i, err)
-//		}
-//
-//		recordLog := domain.KrsRecordLog{
-//			IDKrs:      atoi(record[0]), // validasi dulu apkah ada
-//			Kdmk:       record[1],       // validasi dulu apakh ada
-//			Aksi:       int8(atoi(record[2])),
-//			IDJadwal:   atoi(record[3]),
-//			LastUpdate: LastUpdate,
-//			NimDinus:   record[5], // validasi dulu apakh ada
-//		}
-//
-//		// Insert ke database
-//		if err := db.Create(&recordLog).Error; err != nil {
-//			log.Fatalf("Error in line %v: %v", i, err)
-//		}
-//
-//		log.Println("insert index ", i)
-//	}
-//
-//	log.Println("YEY SUCCESS")
-//}
-
 func TestKrsRecordLog(t *testing.T) {
 	db := conf.InitDB()
 
@@ -1078,7 +1086,7 @@ func TestKrsRecordLog(t *testing.T) {
 
 	// Membatasi goroutine menjadi 50
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 50) // Channel untuk membatasi jumlah goroutine
+	sem := make(chan struct{}, 5) // Channel untuk membatasi jumlah goroutine
 
 	for i, record := range records {
 		if i == 0 {
