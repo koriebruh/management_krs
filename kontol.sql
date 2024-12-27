@@ -591,3 +591,67 @@ SELECT COUNT(*) AS total
 FROM ip_semester;
 SELECT COUNT(*) AS total
 FROM mahasiswa_dinus;
+
+select * from herregist_mahasiswa where nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+
+SELECT mahasiswa_dinus.nim_dinus,
+       mahasiswa_dinus.ta_masuk,
+       mahasiswa_dinus.prodi,
+       mahasiswa_dinus.akdm_stat,
+       mahasiswa_dinus.kelas,
+       herregist_mahasiswa.date_reg,
+       tagihan_mhs.spp_bayar,
+       tagihan_mhs.spp_status,
+       tagihan_mhs.spp_transaksi
+FROM mahasiswa_dinus
+         LEFT JOIN herregist_mahasiswa
+                   ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus
+         LEFT JOIN tagihan_mhs
+                   ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus
+WHERE mahasiswa_dinus.nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+SELECT krl.*
+FROM krs_record_log krl
+         LEFT JOIN krs_record kr ON krl.id_krs = kr.id
+WHERE kr.ta = '20232' ;
+
+select * from krs_record_log where nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+SELECT krl.*
+FROM krs_record_log krl
+         LEFT JOIN krs_record kr
+                   ON krl.id_krs = kr.id AND kr.ta = '20232' where kr.nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+SELECT *
+FROM krs_record
+WHERE ta = '20232' AND nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+SELECT *
+FROM krs_record_log
+WHERE id_krs NOT IN (SELECT id FROM krs_record);
+SELECT *
+FROM krs_record_log
+WHERE id_krs NOT IN (SELECT id FROM krs_record);
+
+desc krs_record de;
+
+select * from krs_record_log where nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+select * from krs_record where nim_dinus = '2ef5428b895c0bf6a76f808a7b04baf4';
+
+select * from krs_record ;
+select * from mahasiswa_dinus;
+
+
+SELECT DISTINCT nim_dinus
+FROM (
+         SELECT nim_dinus FROM mahasiswa_dinus
+         UNION
+         SELECT nim_dinus FROM herregist_mahasiswa
+         UNION
+         SELECT nim_dinus FROM krs_record
+         UNION
+         SELECT nim_dinus FROM ip_semester
+         UNION
+         SELECT nim_dinus FROM tagihan_mhs
+     ) AS combined_nim_dinus;

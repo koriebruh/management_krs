@@ -21,7 +21,7 @@ type StudentStatusRepository interface {
 	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	InsertKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, rec domain.KrsRecord, Aksi int8) error
-	InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error
+	InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) (int, error)
 	GetKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
 	UpdateValidate(ctx context.Context, db *gorm.DB, mhs domain.ValidasiKrsMhs) error
 	CheckTA(ctx context.Context, db *gorm.DB, kodeTA string) error
@@ -89,9 +89,10 @@ func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db 
 
 	err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).
 		Select("mahasiswa_dinus.nim_dinus, mahasiswa_dinus.ta_masuk, mahasiswa_dinus.prodi, mahasiswa_dinus.akdm_stat, mahasiswa_dinus.kelas, herregist_mahasiswa.date_reg, tagihan_mhs.spp_bayar, tagihan_mhs.spp_status, tagihan_mhs.spp_transaksi").
-		Joins("JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus").
-		Joins("JOIN tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
+		Joins("LEFT JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus").
+		Joins("LEFT JOIN tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
 		Where("mahasiswa_dinus.nim_dinus = ?", nimDinus).
+		Limit(-1). // Menambahkan Limit (-1)
 		Scan(&studentStatus).Error
 
 	if err != nil {
@@ -397,14 +398,13 @@ func (s StudentStatusRepositoryImpl) InsertKrsLog(ctx context.Context, db *gorm.
 	return nil
 }
 
-func (s StudentStatusRepositoryImpl) InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) error {
-	fmt.Println(rec)
+func (s StudentStatusRepositoryImpl) InsertKrs(ctx context.Context, db *gorm.DB, rec domain.KrsRecord) (int, error) {
 	if err := db.WithContext(ctx).Create(&rec).Error; err != nil {
 		fmt.Println(err)
-		return fmt.Errorf("err add to tabel record")
+		return 0, fmt.Errorf("err add to tabel record")
 	}
 
-	return nil
+	return rec.ID, nil
 }
 
 func (s StudentStatusRepositoryImpl) GetKrsLog(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error) {

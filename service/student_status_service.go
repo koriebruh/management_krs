@@ -9,6 +9,7 @@ import (
 	"koriebruh/try/dto"
 	"koriebruh/try/helper"
 	"koriebruh/try/repository"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -109,6 +110,7 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 			repositoryData.NimDinus = user.NimDinus
 			repositoryData.AkdmStat = atoi
 			repositoryData.TaMasuk = user.TaMasuk
+			repositoryData.DateReg = student.DateReg
 		}
 
 		return nil
@@ -437,13 +439,24 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 			record = recordOfferScheudle
 		}
 
-		if err = s.StudentStatusRepository.InsertKrs(ctx, tx, record); err != nil {
+		IdRec, err := s.StudentStatusRepository.InsertKrs(ctx, tx, record)
+		if err != nil {
 			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}
 
-		if err = s.StudentStatusRepository.InsertKrsLog(ctx, tx, nimDinus, record, 1); err != nil {
+		log.Print(record)
+		insertTOLog := domain.KrsRecord{
+			ID:       IdRec,
+			TA:       TA,
+			Kdmk:     record.Kdmk,
+			IDJadwal: record.IDJadwal,
+			NimDinus: nimDinus,
+			Sts:      "B",
+			Sks:      record.Sks,
+			Modul:    0,
+		}
+		if err = s.StudentStatusRepository.InsertKrsLog(ctx, tx, nimDinus, insertTOLog, 1); err != nil {
 			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
-
 		}
 
 		// TAMBAH JSISA
