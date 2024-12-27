@@ -32,24 +32,24 @@ func main() {
 
 	app.Get("/", hellobg)
 	app.Post("api/auth/register", authController.Register)
-	app.Post("api/auth/login", authController.Login) //done
+	app.Post("api/auth/login", authController.Login) //login jwt
 	authorized := app.Group("/", conf.JWTAuthMiddleware)
 	authorized.Get("api/user", authController.CurrentAcc)
 
-	authorized.Get("api/students/krs-offers", studentStatusController.KrsOffers)                // done
-	authorized.Get("api/students/krs-schedule", studentStatusController.KrsSchedule)            // done
-	authorized.Get("api/students/status", studentStatusController.InformationStudent)           // done
-	authorized.Put("api/students/class", studentStatusController.SetClassTime)                  // done
-	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)                   // done
-	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)              // done
-	authorized.Get("api/students/krs-status", studentStatusController.StatusKRSMhs)             // ntar tambaha param kodeTA
-	authorized.Get("api/students/scores", studentStatusController.GetAllScores)                 // done
-	authorized.Get("api/students/schedule-conflict", studentStatusController.ScheduleConflicts) // done
-	authorized.Get("api/students/schedule-prodi", studentStatusController.KrsOffersProdi)       // done
-	authorized.Post("api/students/schedule/:id", studentStatusController.InsertSchedule)        // done
-	authorized.Get("api/students/log", studentStatusController.GetKrsLog)                       // done
-	authorized.Delete("api/students/krs/:id", studentStatusController.DeleteKrsRecByIdKrs)      // done
-	authorized.Put("api/students/validate", studentStatusController.UpdateValidate)             // done
+	authorized.Get("api/students/krs-offers", studentStatusController.KrsOffers)                // menampilkan jadwal aktif sem ini
+	authorized.Get("api/students/krs-schedule", studentStatusController.KrsSchedule)            // jadwal input krs sem ini
+	authorized.Get("api/students/status", studentStatusController.InformationStudent)           // informasi keaktifan mhs
+	authorized.Put("api/students/class", studentStatusController.SetClassTime)                  // mengubah jenis kelas
+	authorized.Get("api/students/krs", studentStatusController.GetAllKRSPick)                   // menampilkan krs yg sudah di pilih
+	authorized.Get("api/students/permit", studentStatusController.InsertKRSPermit)              // nempilkan ijin apkah dia di ijinkan insert di luar jadwal
+	authorized.Get("api/students/krs-status", studentStatusController.StatusKRSMhs)             // DONE
+	authorized.Get("api/students/scores", studentStatusController.GetAllScores)                 // menampikan semua score
+	authorized.Get("api/students/schedule-conflict", studentStatusController.ScheduleConflicts) // menampilkan semua jadwal yg bisa di ambil beserta yg conlfic
+	authorized.Get("api/students/schedule-prodi", studentStatusController.KrsOffersProdi)       // menampilkan jadwal yg di tawarkan dari prodi yg fi ambil mhs
+	authorized.Post("api/students/schedule/:id", studentStatusController.InsertSchedule)        // menambahkan jdwal berdasarkan id jadwal
+	authorized.Get("api/students/log", studentStatusController.GetKrsLog)                       // menampilkan log aktifity yg di lakukan mhs
+	authorized.Delete("api/students/krs/:id", studentStatusController.DeleteKrsRecByIdKrs)      // menghapus jadwal yg sudah di tambhakan berdsarkan idkrs
+	authorized.Put("api/students/validate", studentStatusController.UpdateValidate)             // memvalidasi mhs
 
 	//KRS yg user pilih itu krs_record
 	server := fmt.Sprintf("%s:%d", config.Server.Host, config.Server.Port)

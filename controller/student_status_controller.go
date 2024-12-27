@@ -136,8 +136,9 @@ func (c StudentStatusControllerImpl) InsertKRSPermit(ctx *fiber.Ctx) error {
 
 func (c StudentStatusControllerImpl) StatusKRSMhs(ctx *fiber.Ctx) error {
 	NimDinus := ctx.Locals("nim_dinus").(string)
+	kodeTA := ctx.Query("kode-ta")
 
-	krsStatus, err := c.StudentStatusService.StatusKRS(ctx.Context(), NimDinus)
+	krsStatus, err := c.StudentStatusService.StatusKRS(ctx.Context(), NimDinus, kodeTA)
 	if err != nil {
 		return helper.ErrResponse(ctx, err)
 	}
@@ -244,6 +245,7 @@ func (c StudentStatusControllerImpl) DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error {
 
 	NimDinus := ctx.Locals("nim_dinus").(string)
 	params := ctx.Params("id")
+	kodeTA := ctx.Query("kode-ta")
 
 	idKrs, err := strconv.Atoi(params)
 	if err != nil {
@@ -251,7 +253,7 @@ func (c StudentStatusControllerImpl) DeleteKrsRecByIdKrs(ctx *fiber.Ctx) error {
 		return helper.ErrResponse(ctx, err)
 	}
 
-	msg, err := c.StudentStatusService.DeleteKrsRecByIdKrs(ctx.Context(), NimDinus, idKrs)
+	msg, err := c.StudentStatusService.DeleteKrsRecByIdKrs(ctx.Context(), NimDinus, idKrs, kodeTA)
 	if err != nil {
 		return helper.ErrResponse(ctx, err)
 	}

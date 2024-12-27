@@ -558,3 +558,17 @@ SELECT * FROM `tahun_ajaran` WHERE kode ='20232' ORDER BY `tahun_ajaran`.`id` LI
 2024-02-20 15:01:19 validate
 2024-12-25 10:34:43 not validate
 select * from validasi_krs_mhs where job_host = 'haha';
+
+SELECT * FROM validasi_krs_mhs;
+SELECT * FROM krs_record;
+
+SELECT DISTINCT a.nim_dinus
+FROM validasi_krs_mhs a
+         INNER JOIN krs_record b
+                    ON a.nim_dinus = b.nim_dinus INNER JOIN mhs_ijin_krs c ON a.nim_dinus = c.nim_dinus;
+
+
+select * from mhs_ijin_krs where nim_dinus = '176bd4688305a3ae546b35b52aed75c8';
+
+select * from mhs_ijin_krs where ijinkan ;
+select * from validasi_krs_mhs where ta != 20232;

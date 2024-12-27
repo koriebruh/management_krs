@@ -21,13 +21,13 @@ type StudentStatusService interface {
 	SetClassTime(ctx context.Context, nimDinus string, req dto.ChangeClassReq) error
 	GetAllKRSPick(ctx context.Context, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, nimDinus string) (string, error)
-	StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error)
+	StatusKRS(ctx context.Context, nimDinus string, kodeTA string) (dto.StatusKrsRes, error)
 	KrsOffersProdi(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
 	InsertSchedule(ctx context.Context, nimDinus string, kodeTA string, idSchedule int) (string, error)
 	GetKrsLog(ctx context.Context, nimDinus string, kodeTA string) ([]dto.KrsLogRes, error)
-	DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int) (string, error)
+	DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int, kodeTA string) (string, error)
 	UpdateValidate(ctx context.Context, kodeTA string, req dto.UpdateValidateReq) (string, error)
 }
 
@@ -223,11 +223,11 @@ func (s StudentStatusServicesImpl) InsertKRSPermit(ctx context.Context, nimDinus
 
 }
 
-func (s StudentStatusServicesImpl) StatusKRS(ctx context.Context, nimDinus string) (dto.StatusKrsRes, error) {
+func (s StudentStatusServicesImpl) StatusKRS(ctx context.Context, nimDinus string, kodeTA string) (dto.StatusKrsRes, error) {
 	var result dto.StatusKrsRes
 
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
-		krsStatus, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		krsStatus, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus, kodeTA)
 		if err != nil {
 			return fmt.Errorf("%w: %v", helper.ErrNotFound, err)
 		}
@@ -318,14 +318,14 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 		}
 		Prodi := userExist.Prodi
 
-		//CEK APAKAH PUNYA IJIN INSERT KRS
-		_, err = s.StudentStatusRepository.InsertKRSPermit(ctx, tx, nimDinus)
-		if err != nil {
-			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("no have permit insert krs"))
-		}
+		////CEK APAKAH PUNYA IJIN INSERT KRS di luar jadwal
+		//_, err = s.StudentStatusRepository.InsertKRSPermit(ctx, tx, nimDinus)
+		//if err != nil {
+		//	return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("no have permit insert krs"))
+		//}
 
 		//KRS YG SUDAH DI VALIDASI TIDAK BISA INSERT
-		statusKRS, _ := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		statusKRS, _ := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus, kodeTA)
 		if statusKRS.Validate == "Validated" {
 			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("krs already validated can't insert"))
 		}
@@ -474,7 +474,7 @@ func (s StudentStatusServicesImpl) GetKrsLog(ctx context.Context, nimDinus strin
 	return results, nil
 }
 
-func (s StudentStatusServicesImpl) DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int) (string, error) {
+func (s StudentStatusServicesImpl) DeleteKrsRecByIdKrs(ctx context.Context, nimDinus string, idKrs int, kodeTA string) (string, error) {
 	err := s.DB.Transaction(func(tx *gorm.DB) error {
 		var krsRec domain.KrsRecord
 		if err := tx.WithContext(ctx).Where("id=?", idKrs).First(&krsRec).Error; err != nil {
@@ -487,7 +487,7 @@ func (s StudentStatusServicesImpl) DeleteKrsRecByIdKrs(ctx context.Context, nimD
 		idSchedule := krsRec.ID
 
 		//VALIDASI YG SUDAH DI VALUDASI TIDAK BISA DELETE
-		statusKRS, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus)
+		statusKRS, err := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus, kodeTA)
 		if statusKRS.Validate == "Validated" {
 			return fmt.Errorf("%w: %v", helper.ErrBadRequest, err)
 		}

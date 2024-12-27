@@ -16,7 +16,7 @@ type StudentStatusRepository interface {
 	SetClassTime(ctx context.Context, db *gorm.DB, nimDinus string, classOption int) error
 	GetAllKRSPick(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.SelectedKrs, error)
 	InsertKRSPermit(ctx context.Context, db *gorm.DB, nimDinus string) (bool, error)
-	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error)
+	StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) (dto.StatusKrsRes, error)
 	KrsOffersProdi(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string, kelompok string) ([]dto.KrsOffersProdiResponse, error)
 	GetAllScores(ctx context.Context, db *gorm.DB, nimDinus string) ([]dto.AllScoresRes, error)
 	ScheduleConflicts(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) ([]dto.ScheduleConflictRes, error)
@@ -175,23 +175,28 @@ func (s StudentStatusRepositoryImpl) InsertKRSPermit(ctx context.Context, db *go
 	return true, nil
 }
 
-func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string) (dto.StatusKrsRes, error) {
+func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB, nimDinus string, kodeTA string) (dto.StatusKrsRes, error) {
 	var status dto.StatusKrsRes
 
 	//CHECK VALDASI DULU
 	var validasi string
-	err := db.WithContext(ctx).Model(&domain.ValidasiKrsMhs{}).
-		Select("CASE WHEN job_date <= NOW() THEN 'Validated' ELSE 'Not Validated' END AS validation_status").
-		Where("nim_dinus = ?", nimDinus).
-		First(&validasi).Error
-	if err != nil {
-		return status, fmt.Errorf("error %v not validate", nimDinus)
+
+	exists := db.WithContext(ctx).Model(&domain.ValidasiKrsMhs{}).
+		Select("1").
+		Where("nim_dinus = ? AND ta = ?", nimDinus, kodeTA).
+		Limit(1).
+		Find(&validasi).RowsAffected
+
+	if exists > 0 {
+		validasi = "Validated" // Data ditemukan
+	} else {
+		validasi = "Not Validated" // Data tidak ditemukan
 	}
 
 	//CHECK DI PAKETKAN ATAU TIDAK
 	var diPaketkanKah domain.MhsDipaketkan
 	var paket string
-	if err = db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&diPaketkanKah).Error; err != nil {
+	if err := db.WithContext(ctx).Where("nim_dinus = ?", nimDinus).First(&diPaketkanKah).Error; err != nil {
 		paket = "tidak di paketkan"
 	} else {
 		paket = "dipaketkan"
@@ -204,7 +209,7 @@ func (s StudentStatusRepositoryImpl) StatusKRS(ctx context.Context, db *gorm.DB,
 		Ips         string
 		TahunMasuk  string
 	}
-	if err = db.WithContext(ctx).Raw(`
+	if err := db.WithContext(ctx).Raw(`
 		SELECT
 			ip_s.ta AS tahun_ajaran,
 			ip_s.sks,
