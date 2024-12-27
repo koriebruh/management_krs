@@ -573,3 +573,21 @@ select * from mhs_ijin_krs where nim_dinus = '176bd4688305a3ae546b35b52aed75c8';
 select * from mhs_ijin_krs where ijinkan ;
 select * from validasi_krs_mhs where ta != 20232;
 select * from krs_record;
+
+SHOW TABLES LIKE 'tagihan_mhs';
+select * from tagihan_mhs;
+
+select * from krs_management.tagihan_mhs;
+desc krs_management.tagihan_mhs;
+desc tagihan_mhs;
+select * from tahun_ajaran;
+
+select * from ip_semester where nim_dinus = 'b7ecdd849e627833e97716bb4cfcaed8';
+
+SELECT COUNT(*) AS total
+FROM tagihan_mhs;
+
+SELECT COUNT(*) AS total
+FROM ip_semester;
+SELECT COUNT(*) AS total
+FROM mahasiswa_dinus;

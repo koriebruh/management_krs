@@ -90,12 +90,12 @@ func (s StudentStatusRepositoryImpl) InformationStudent(ctx context.Context, db 
 	err := db.WithContext(ctx).Model(&domain.MahasiswaDinus{}).
 		Select("mahasiswa_dinus.nim_dinus, mahasiswa_dinus.ta_masuk, mahasiswa_dinus.prodi, mahasiswa_dinus.akdm_stat, mahasiswa_dinus.kelas, herregist_mahasiswa.date_reg, tagihan_mhs.spp_bayar, tagihan_mhs.spp_status, tagihan_mhs.spp_transaksi").
 		Joins("JOIN herregist_mahasiswa ON mahasiswa_dinus.nim_dinus = herregist_mahasiswa.nim_dinus").
-		Joins("JOIN krs_management.tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
+		Joins("JOIN tagihan_mhs ON herregist_mahasiswa.nim_dinus = tagihan_mhs.nim_dinus").
 		Where("mahasiswa_dinus.nim_dinus = ?", nimDinus).
 		Scan(&studentStatus).Error
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to get status user %v", nimDinus)
+		return nil, fmt.Errorf("failed to get status user %v, %e", nimDinus, err)
 	}
 
 	fmt.Println(studentStatus)
