@@ -3,6 +3,6 @@
 #create migrate
 migrate create -ext sql -dir db/migrations create_table_first
 
-migrate -database "mysql://root@tcp(localhost:3307)/krs_management" -path db/migrations up
+migrate -database "mysql://root:korie123@tcp(localhost:3307)/krs_management" -path db/migrations up
 
-migrate -database "mysql://root@tcp(localhost:3307)/krs_management" -path db/migrations down
+migrate -database "mysql://root:korie123@tcp(localhost:3307)/krs_management" -path db/migrations down

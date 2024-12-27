@@ -23,8 +23,8 @@ CREATE TABLE `mahasiswa_dinus`
     `akdm_stat` char(2)     NOT NULL COMMENT '1 = aktif, 2 = cuti, 3 = keluar, 4 = lulus, 5 = mangkir, 6 = meninggal, 7 = DO, 8 = Aktif Keuangan'
 );
 
-#BODOAMAD
-TAMBAH ID BUAT RELASI DATA NYA TOLOL ASU
+-- #BODOAMAD
+-- TAMBAH ID BUAT RELASI DATA NYA TOLOL ASU
 CREATE TABLE `matkul_kurikulum`
 (
     `kur_id`         int(11),
