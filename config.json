@@ -1,17 +1,17 @@
 {
   "server": {
-    "host": "localhost",
+    "host": "go-app",
     "port": 3000
   },
   "database": {
     "user": "root",
     "pass": "korie123",
-    "host": "localhost",
-    "port": "3307",
+    "host": "mysql-db",
+    "port": "3306",
     "name": "krs_management"
   },
   "redis": {
-    "addr": "localhost:6379",
+    "addr": "redis-db:6379",
     "pass": "",
     "db": 0,
     "protocol": 3

@@ -11,6 +11,11 @@ services:
       MYSQL_ROOT_PASSWORD: 'korie123'
     volumes:
       - mysql-db:/var/lib/mysql
+    healthcheck: # Tambahkan healthcheck
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis-db:
     container_name: redis-db
@@ -18,6 +23,26 @@ services:
     ports:
       - "6379:6379"
     command: ["redis-server"] # Menjalankan Redis tanpa password
+    healthcheck: # Tambahkan healthcheck
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  go-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - config.json
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      redis-db:
+        condition: service_healthy
+    restart: always
 
 volumes:
   mysql-db:
