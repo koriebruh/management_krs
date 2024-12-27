@@ -572,3 +572,4 @@ select * from mhs_ijin_krs where nim_dinus = '176bd4688305a3ae546b35b52aed75c8';
 
 select * from mhs_ijin_krs where ijinkan ;
 select * from validasi_krs_mhs where ta != 20232;
+select * from krs_record;

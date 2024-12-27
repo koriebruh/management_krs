@@ -47,6 +47,7 @@ func (s StudentStatusRepositoryImpl) KrsOffers(ctx context.Context, db *gorm.DB,
 			h.nama AS hari,
 			sk.jam_mulai,
 			sk.jam_selesai,
+			jt.jns_jam AS jns_jam,
 			r.nama AS ruang
 		FROM jadwal_tawar jt
 			LEFT JOIN matkul_kurikulum mk ON jt.kdmk = mk.kdmk
@@ -134,7 +135,7 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
 	err := db.WithContext(ctx).Model(&domain.JadwalTawar{}).
 		Select(`
         DISTINCT jadwal_tawar.id AS id,
-		krs_record.id AS krs_record_id,
+        krs_record.id AS krs_record_id,
         jadwal_tawar.ta AS tahun_ajaran,
         jadwal_tawar.kdmk AS kode_mata_kuliah,
         jadwal_tawar.klpk AS kelompok,
@@ -143,7 +144,8 @@ func (s StudentStatusRepositoryImpl) GetAllKRSPick(ctx context.Context, db *gorm
         hari.nama AS hari,
         sesi_kuliah.jam_mulai,
         sesi_kuliah.jam_selesai,
-        ruang.nama AS ruang
+        ruang.nama AS ruang,
+        jadwal_tawar.jns_jam AS jns_jam
     `).
 		Joins("LEFT JOIN matkul_kurikulum ON jadwal_tawar.kdmk = matkul_kurikulum.kdmk").
 		Joins("LEFT JOIN hari ON jadwal_tawar.id_hari1 = hari.id").
@@ -248,6 +250,7 @@ func (s StudentStatusRepositoryImpl) KrsOffersProdi(ctx context.Context, db *gor
 						mk.nmmk AS nama_mata_kuliah,
 						mk.sks  AS jumlah_sks,
 						h.nama  AS hari,
+						jt.jns_jam AS jns_jam,
 						sk.jam_mulai,
 						sk.jam_selesai,
 						r.nama  AS ruang,
@@ -337,6 +340,7 @@ func (s StudentStatusRepositoryImpl) ScheduleConflicts(ctx context.Context, db *
             h.nama AS hari,
             sk.jam_mulai,
             sk.jam_selesai,
+            jt.jns_jam AS jns_jam,
             r.nama AS ruang,
             CASE
                 WHEN EXISTS (

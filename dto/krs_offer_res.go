@@ -9,5 +9,6 @@ type KrsOfferRes struct {
 	Hari        string `gorm:"column:hari" json:"hari"`
 	JamMulai    string `gorm:"column:jam_mulai" json:"jam_mulai"`
 	JamSelesai  string `gorm:"column:jam_selesai" json:"jam_selesai"`
+	JnsJam      string `gorm:"column:jns_jam" json:"jns_jam"`
 	Ruang       string `gorm:"column:ruang" json:"ruang"`
 }

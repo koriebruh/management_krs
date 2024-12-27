@@ -11,6 +11,7 @@ type KrsOffersProdiResponse struct {
 	JamMulai        string `gorm:"column:jam_mulai"` // Perbaikan di sini, sebelumnya ada typo `:=`
 	JamSelesai      string `gorm:"column:jam_selesai"`
 	Ruang           string `gorm:"column:ruang"`
+	JnsJam          string `gorm:"column:jns_jam"`
 	StatusPemilihan string `gorm:"column:status_pemilihan"`
 	StatusKrs       string `gorm:"column:status_krs"`
 }

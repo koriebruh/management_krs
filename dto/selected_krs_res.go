@@ -12,4 +12,5 @@ type SelectedKrs struct {
 	JamMulai       string `json:"jam_mulai"`        // Jam Mulai Kuliah
 	JamSelesai     string `json:"jam_selesai"`      // Jam Selesai Kuliah
 	Ruang          string `json:"ruang"`            // Nama Ruang
+	JnsJam         string `json:"jns_jam"`          //
 }

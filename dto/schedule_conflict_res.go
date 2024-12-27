@@ -10,6 +10,7 @@ type ScheduleConflictRes struct {
 	JamMulai       string `gorm:"column:jam_mulai" json:"jam_mulai"`
 	JamSelesai     string `gorm:"column:jam_selesai" json:"jam_selesai"`
 	Ruang          string `gorm:"column:ruang" json:"ruang"`
+	JnsJam         string `gorm:"column:jns_jam"`
 	StatusBentrok  string `gorm:"column:status_bentrok" json:"status_bentrok"`
 	KeteranganSlot string `gorm:"column:keterangan_slot" json:"keterangan_slot"`
 }
