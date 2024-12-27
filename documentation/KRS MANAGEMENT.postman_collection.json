@@ -1,0 +1,514 @@
+{
+	"info": {
+		"_postman_id": "827cbdc1-3459-4d5f-8a1b-c4c50bae00ce",
+		"name": "KRS MANAGEMENT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32749485"
+	},
+	"item": [
+		{
+			"name": "LOGIN",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"nim_dinus\":\"b7ecdd849e627833e97716bb4cfcaed8\",\r\n  \"pass_mhs\":\"atur sendiri lah\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "KRS OFFERS",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc2NTA1Mn0.piFubzcsLM0fgLuSjs5x9PMCzpqzmYKRKPoiBt6x6eA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/krs-offers?kode-ta=20232",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"krs-offers"
+					],
+					"query": [
+						{
+							"key": "kode-ta",
+							"value": "20232"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "KRS SCHEDULE",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc3MTcxMn0.rcomf9jvA-lWTSI02HPwYqXu1U1pmj32QYy9ryGG4Ws",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/krs-schedule",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"krs-schedule"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UBAH KELAS",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n{\r\n  \"kelas\": 100\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/students/class",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"class"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET STATUS",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI0Y2Q0ODllZjY2OTdhNmIzY2RmNzkwZjg0NzRlYzQ0MyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDQ1NjI3M30.B1vA6-bRY19Yn-oKitdcbI85erg7NzKFE1BxaGDs2Q0",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET KRS RN",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiIwMDdmMmI3ZGZhMzYyMTBmYjA3YmQ3ZmU4NDdmNWJmMyIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDUwOTE4MH0.zrcLWY4VKhMdDHvJ1S8wNNb3AmjlwTXdYAqL8FLhXQo",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/krs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"krs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "IJIN KRS INSER KRS DI LUAR JADWAL",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDc3MTcxMn0.rcomf9jvA-lWTSI02HPwYqXu1U1pmj32QYy9ryGG4Ws",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/permit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"permit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "KRS VALIDASI STATUS",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI1NjBiNGQ3OGZjMTYzZDU3Nzc0ZTA0NTMxN2JlODQyZiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTA4MjM1MH0.xBScaEUAOUNSi9IEYph3BUprOKtXP3RjS_4rUZQIPxc",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/krs-status",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"krs-status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET ALL SCORES",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI2ZjQxZGRmMmU1NjZmMzcwODlkZDBlMmY1ZmRiZWNhMSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDg1NTI2M30.35IsbCrA_dfXwp7W6MM711_QmmkmuCyHFa7nLQpHd_Q",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/scores",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"scores"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JADWAL PRODI",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiIwMjBjNjM1NTA3MWI5MWY4ZDNlZWE2NDQyZDk2ODUyNSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTAwNjI0NH0.qVndu6hj4ixtaDX8tx522w4O_fccyoAX0OYoNUGCy2Y",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/schedule-prodi?kode-ta=20232",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"schedule-prodi"
+					],
+					"query": [
+						{
+							"key": "kode-ta",
+							"value": "20232"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JADWAL CONFLICT",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiIxN2QzMjY0ZjZlZGYwNzE4MjMxMWQ1Y2QxOWUxY2QwYSIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNDg4MDgwNn0.CqGMXilLLLnsmIsaX6EYp_QY9PUm6HW8yUquq7fEn8k",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/schedule-conflict?kode-ta=20232",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"schedule-conflict"
+					],
+					"query": [
+						{
+							"key": "kode-ta",
+							"value": "20232"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "INSERT JADWAL",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI1NjBiNGQ3OGZjMTYzZDU3Nzc0ZTA0NTMxN2JlODQyZiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTAxNzkzMX0.np4JFwrWS1HwusCWIAfchTjcMt6mssZwFhQBAsvD2mA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/schedule/283180?kode-ta=20232",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"schedule",
+						"283180"
+					],
+					"query": [
+						{
+							"key": "kode-ta",
+							"value": "20232"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LOG",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI5Yjc3YmQ1YjY4ZWQ5Yzc4ODdhODE5MDUwMTY3MzFkMiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTA4NjY5OX0.E8xPv4xioVi56ZhhE_CjB-LhJl5PM1ZdF26bZQ-YJVY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/log?kode-ta=20232",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"log"
+					],
+					"query": [
+						{
+							"key": "kode-ta",
+							"value": "20232"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE KRS RN",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI5Yjc3YmQ1YjY4ZWQ5Yzc4ODdhODE5MDUwMTY3MzFkMiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTA4NjY5OX0.E8xPv4xioVi56ZhhE_CjB-LhJl5PM1ZdF26bZQ-YJVY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/students/krs/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"krs",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE VALIDATE",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaW1fZGludXMiOiI5Yjc3YmQ1YjY4ZWQ5Yzc4ODdhODE5MDUwMTY3MzFkMiIsImlzcyI6ImtvcmllYnJ1aC5ha2FKYW1hbCIsImV4cCI6MTczNTA5Nzg1MH0.5jWJ-CL87copk-Evx0HCp5LaSnW_T9QiitskYARPIQ4",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"job_host\" :\"haha\",\r\n    \"job_agent\":\"ghihih\",\r\n    \"ta\":20232\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/students/validate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"students",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
