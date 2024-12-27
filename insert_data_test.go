@@ -15,6 +15,81 @@ import (
 	"time"
 )
 
+var db = conf.InitDB()
+
+// TestDataInsertion menjalankan semua test insert secara berurutan
+func TestDataInsertion1(t *testing.T) {
+	//
+	t.Run("1-mhs-dinus", func(t *testing.T) {
+		TestInsertMahasiswaDinus(t)
+	})
+	t.Run("2-matkul-kurikulum", func(t *testing.T) {
+		TestInsertMatkulkurikulum(t)
+	})
+	t.Run("3-hari", func(t *testing.T) {
+		TestInsertHari(t)
+	})
+	t.Run("4-sesi-kuliah", func(t *testing.T) {
+		TestInsertSesiKuliah(t)
+	})
+	t.Run("5-ruang", func(t *testing.T) {
+		TestInsertRuang(t)
+	})
+	t.Run("6-tahun-ajaran", func(t *testing.T) {
+		TestInsertTahunAjaran(t)
+	})
+
+	//
+
+}
+
+func TestDataInsertion2(t *testing.T) {
+	t.Run("7-tagian-mhs", func(t *testing.T) {
+		TestTagihanMhs(t)
+	})
+
+	//ini err mulu
+	t.Run("8-ip-semester", func(t *testing.T) {
+		TestIpSemester(t)
+	})
+	t.Run("9-jadwal-input-krs", func(t *testing.T) {
+		TestJadwalInputKrs(t)
+	})
+	t.Run("10-mhs-ijin-krs", func(t *testing.T) {
+		TestMhsIjinKrs(t)
+	})
+	t.Run("11-herregist", func(t *testing.T) {
+		TestHerregistMhs(t)
+	})
+	t.Run("12-mhs-dipaketkan", func(t *testing.T) {
+		TestMahasiswaDiPaketkan(t)
+	})
+}
+
+func TestDataInsertion3(t *testing.T) {
+
+	t.Run("13-daftar-nilai", func(t *testing.T) {
+		TestDaftarNilai(t)
+	})
+	t.Run("14-validasi-krs", func(t *testing.T) {
+		TestValidasiKrsMhs(t)
+	})
+	t.Run("15-sesi-kuliah-bentrok", func(t *testing.T) {
+		TestSesiKuliahBentrok(t)
+	})
+
+	//
+	t.Run("16-jadwal-tawar", func(t *testing.T) {
+		TestJadwalTawar(t)
+	})
+	t.Run("17-krs-record", func(t *testing.T) {
+		TestKrsRecord(t)
+	})
+	t.Run("18-krs-record-log", func(t *testing.T) {
+		TestKrsRecordLog(t)
+	})
+}
+
 ////////////////////////////////////////
 /*
 	&domain.MahasiswaDinus{},
@@ -42,7 +117,6 @@ func atoi(str string) int {
 
 // AGA LAMA TOLOL 3OK ASW NTAR BUAT CONCURENT
 func TestInsertMahasiswaDinus(t *testing.T) {
-	db := conf.InitDB()
 	file, err := os.Open("data_krs/mahasiswa_dinus.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -52,15 +126,11 @@ func TestInsertMahasiswaDinus(t *testing.T) {
 	IfErrNotNil(err)
 
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 5)
+	sem := make(chan struct{}, 20)
 
 	for i, record := range records {
 		if i == 0 {
 			continue // Skip header
-		}
-		if len(record) < 5 {
-			log.Printf("Skipping line %d due to insufficient columns: %v", i, record)
-			continue
 		}
 
 		wg.Add(1)
@@ -97,7 +167,6 @@ func TestInsertMahasiswaDinus(t *testing.T) {
 }
 
 func TestInsertMatkulkurikulum(t *testing.T) {
-	db := conf.InitDB()
 
 	file, err := os.Open("data_krs/matkul_kurikulum.csv")
 	IfErrNotNil(err)
@@ -142,7 +211,7 @@ func TestInsertMatkulkurikulum(t *testing.T) {
 }
 
 func TestInsertHari(t *testing.T) {
-	db := conf.InitDB()
+
 	hariData := []domain.Hari{
 		{ID: 0, Nama: "-", NamaEn: "-"},
 		{ID: 1, Nama: "SENIN", NamaEn: "MONDAY"},
@@ -165,7 +234,6 @@ func TestInsertHari(t *testing.T) {
 }
 
 func TestInsertSesiKuliah(t *testing.T) {
-	db := conf.InitDB()
 	file, err := os.Open("data_krs/sesi_kuliah.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -217,7 +285,7 @@ func parseTimeOnly(timeStr string) (time.Time, error) {
 }
 
 func TestInsertRuang(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/ruang.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -255,7 +323,6 @@ func TestInsertRuang(t *testing.T) {
 }
 
 func TestInsertTahunAjaran(t *testing.T) {
-	db := conf.InitDB()
 	file, err := os.Open("data_krs/tahun_ajaran.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -325,7 +392,6 @@ func TestInsertTahunAjaran(t *testing.T) {
 // DUNGU DATA NIM DI TABEL TAGHAN AMA DI MAHASISWA DINUS BEDA MANA BISA FORIGEN KEY NYA,
 // (INI SUCCES DATA TERAHIR YG EMANG BEGO)
 func TestTagihanMhs(t *testing.T) {
-	db := conf.InitDB()
 	file, err := os.Open("data_krs/tagihan_mhs.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -397,7 +463,7 @@ func TestTagihanMhs(t *testing.T) {
 // SKIP SOME DATA NIM  and KODE YG TUDAK ADA JG
 // (WORK) AGA LAMA NANTI UBAH PAKE GO ROUTRINE
 func TestIpSemester(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/ip_semester.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -408,8 +474,8 @@ func TestIpSemester(t *testing.T) {
 
 	const layout = "2006-01-02 15:04:05.000"
 
-	var wg sync.WaitGroup         // Membuat WaitGroup untuk menunggu semua goroutine selesai
-	sem := make(chan struct{}, 5) // Batas maksimal 5 goroutine concurrent
+	var wg sync.WaitGroup          // Membuat WaitGroup untuk menunggu semua goroutine selesai
+	sem := make(chan struct{}, 10) // Batas maksimal 5 goroutine concurrent
 
 	for i, record := range records {
 		if i == 0 {
@@ -476,7 +542,7 @@ func TestIpSemester(t *testing.T) {
 
 // (AMAN)
 func TestJadwalInputKrs(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/jadwal_input_krs.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -511,7 +577,7 @@ func TestJadwalInputKrs(t *testing.T) {
 
 		// Insert ke database
 		if err := db.Create(&jadwalInputKrs).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+			log.Printf("Error in line %v: %v", i, err)
 		}
 
 		log.Println("insert index ", i)
@@ -523,7 +589,7 @@ func TestJadwalInputKrs(t *testing.T) {
 // SKIP SOME DATA NIM YG TOLOL GA ADA
 // (AMAN)
 func TestMhsIjinKrs(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/mhs_ijin_krs.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -562,7 +628,7 @@ func TestMhsIjinKrs(t *testing.T) {
 
 		// Insert ke database
 		if err := db.Create(&ijinKrs).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+			log.Printf("Error in line %v: %v", i, err)
 		}
 
 		log.Println("insert index ", i)
@@ -573,7 +639,7 @@ func TestMhsIjinKrs(t *testing.T) {
 
 // (AMAN)
 func TestHerregistMhs(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/herregist_mahasiswa.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -585,7 +651,7 @@ func TestHerregistMhs(t *testing.T) {
 	const layout = "2006-01-02 15:04:05.000"
 
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 5)
+	sem := make(chan struct{}, 20)
 
 	for i, record := range records {
 		if i == 0 {
@@ -638,7 +704,7 @@ func TestHerregistMhs(t *testing.T) {
 
 // WORK BUAT DATA EMANG ADA YG TOLOL JADI ADA YG GA MASUK
 func TestMahasiswaDiPaketkan(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/mhs_dipaketkan.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -667,7 +733,7 @@ func TestMahasiswaDiPaketkan(t *testing.T) {
 
 		// Insert ke database
 		if err := db.Create(&dipaketkan).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+			log.Printf("Error in line %v: %v", i, err)
 		}
 
 		log.Println("insert index ", i)
@@ -678,32 +744,38 @@ func TestMahasiswaDiPaketkan(t *testing.T) {
 
 // WORK tapi lama nanti kalo sempat pakai goroutine
 func TestDaftarNilai(t *testing.T) {
-	db := conf.InitDB()
+
+	// Buka file CSV
 	file, err := os.Open("data_krs/daftar_nilai.csv")
 	IfErrNotNil(err)
 	defer file.Close()
 
+	// Membaca file CSV
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	IfErrNotNil(err)
 
+	// Menggunakan WaitGroup dan Semaphore untuk concurrency control
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 5)
+	sem := make(chan struct{}, 40) // Hanya 40 goroutine yang dapat berjalan secara bersamaan
 
+	// Iterasi melalui semua records dan menjalankan goroutine
 	for i, record := range records {
-		if i == 0 {
+		if i == 0 { // Skip header
 			continue
 		}
 
-		wg.Add(1)
-		sem <- struct{}{}
+		wg.Add(1)         // Menambahkan 1 untuk setiap goroutine yang akan dijalankan
+		sem <- struct{}{} // Mengambil slot dari semaphore
 
+		// Jalankan goroutine
 		go func(i int, record []string) {
 			defer func() {
-				<-sem
-				wg.Done()
+				<-sem     // Melepaskan slot semaphore setelah selesai
+				wg.Done() // Mengurangi counter WaitGroup setelah selesai
 			}()
 
+			// Cek apakah mahasiswa ada di database
 			var mahasiswa domain.MahasiswaDinus
 			err := db.Where("nim_dinus = ?", record[1]).First(&mahasiswa).Error
 			if err != nil {
@@ -711,30 +783,35 @@ func TestDaftarNilai(t *testing.T) {
 				return
 			}
 
+			// Membuat objek DaftarNilai
 			daftarNilai := domain.DaftarNilai{
-				ID:       atoi(record[0]),
+				ID:       atoi(record[0]), // Konversi ID dari string ke int
 				NimDinus: record[1],
 				Kdmk:     record[2],
 				Nl:       record[3],
-				Hide:     int16(atoi(record[4])),
+				Hide:     int16(atoi(record[4])), // Konversi Hide ke int16
 			}
 
+			// Insert data ke database
 			if err := db.Create(&daftarNilai).Error; err != nil {
 				log.Printf("Error in line %v: %v", i, err)
 				return
 			}
 
 			log.Printf("Insert successful for NIM %s at line %d", record[1], i)
-		}(i, record)
+		}(i, record) // Pass `i` dan `record` ke goroutine
 	}
 
+	// Tunggu sampai semua goroutine selesai
 	wg.Wait()
+
+	// Selesai
 	log.Println("YEY SUCCESS")
 }
 
 // WORK
 func TestValidasiKrsMhs(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/validasi_krs_mhs.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -767,7 +844,7 @@ func TestValidasiKrsMhs(t *testing.T) {
 
 		JobDate, err := time.Parse(layout, record[2])
 		if err != nil {
-			log.Fatalf("Error parsing date in line %v: %v", i, err)
+			log.Printf("Error parsing date in line %v: %v", i, err)
 		}
 
 		validasiKrsMhs := domain.ValidasiKrsMhs{
@@ -781,7 +858,7 @@ func TestValidasiKrsMhs(t *testing.T) {
 
 		// Insert ke database
 		if err := db.Create(&validasiKrsMhs).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+			log.Printf("Error in line %v: %v", i, err)
 		}
 
 		log.Println("insert index ", i)
@@ -792,7 +869,6 @@ func TestValidasiKrsMhs(t *testing.T) {
 
 // WORK
 func TestSesiKuliahBentrok(t *testing.T) {
-	db := conf.InitDB()
 	file, err := os.Open("data_krs/sesi_kuliah_bentrok.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -801,52 +877,66 @@ func TestSesiKuliahBentrok(t *testing.T) {
 	records, err := reader.ReadAll()
 	IfErrNotNil(err)
 
+	var wg sync.WaitGroup          // Untuk menunggu semua goroutine selesai
+	sem := make(chan struct{}, 10) // Batasi maksimal 10 goroutine berjalan bersamaan
+
 	for i, record := range records {
 		if i == 0 {
-			continue
+			continue // Skip header
 		}
 
-		idSesiKuliah := atoi(record[0])
-		idBentrok := atoi(record[1])
+		wg.Add(1)
+		sem <- struct{}{} // Ambil slot goroutine
 
-		// JIKA ID DAN ID BENTOK SUDAH ADA DI DB SKIP
-		var bentrokExist domain.SesiKuliahBentrok
-		err := db.Where("id = ? AND id_bentrok = ?", idSesiKuliah, idBentrok).First(&bentrokExist).Error
-		if err == nil {
-			log.Printf("Sesi kuliah bentrok dengan id %d dan id_bentrok %d sudah ada, skipping line %d", idSesiKuliah, idBentrok, i)
-			continue
-		}
+		go func(i int, record []string) {
+			defer func() {
+				<-sem     // Lepaskan slot setelah selesai
+				wg.Done() // Kurangi counter WaitGroup
+			}()
 
-		//	CEK APAKAH ID SESIMKUALIAH ADA
-		var sesiKuliah domain.SesiKuliah
-		err = db.Where("id = ?", idSesiKuliah).First(&sesiKuliah).Error
-		if err != nil {
-			log.Printf("Sesi kuliah dengan id %d tidak ditemukan, skipping line %d", idSesiKuliah, i)
-			continue
-		}
+			idSesiKuliah := atoi(record[0])
+			idBentrok := atoi(record[1])
 
-		// CEK APAKAH IDKULIAHBENTROK ADA DI SESI KULIAH
-		var sesiKuliahBentrok domain.SesiKuliah
-		err = db.Where("id = ?", idBentrok).First(&sesiKuliahBentrok).Error
-		if err != nil {
-			// Jika id_bentrok tidak ditemukan di sesi_kuliah, lewati baris ini
-			log.Printf("ID Bentrok %d tidak ditemukan di tabel sesi_kuliah, skipping line %d", idBentrok, i)
-			continue
-		}
+			// JIKA ID DAN ID BENTROK SUDAH ADA DI DB SKIP
+			var bentrokExist domain.SesiKuliahBentrok
+			err := db.Where("id = ? AND id_bentrok = ?", idSesiKuliah, idBentrok).First(&bentrokExist).Error
+			if err == nil {
+				log.Printf("Sesi kuliah bentrok dengan id %d dan id_bentrok %d sudah ada, skipping line %d", idSesiKuliah, idBentrok, i)
+				return
+			}
 
-		bentrok := domain.SesiKuliahBentrok{
-			ID:        idSesiKuliah,
-			IDBentrok: idBentrok,
-		}
+			// CEK APAKAH ID SESI KULIAH ADA
+			var sesiKuliah domain.SesiKuliah
+			err = db.Where("id = ?", idSesiKuliah).First(&sesiKuliah).Error
+			if err != nil {
+				log.Printf("Sesi kuliah dengan id %d tidak ditemukan, skipping line %d", idSesiKuliah, i)
+				return
+			}
 
-		// Insert ke database
-		if err := db.Create(&bentrok).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
-		}
+			// CEK APAKAH IDKULIAHBENTROK ADA DI SESI KULIAH
+			var sesiKuliahBentrok domain.SesiKuliah
+			err = db.Where("id = ?", idBentrok).First(&sesiKuliahBentrok).Error
+			if err != nil {
+				log.Printf("ID Bentrok %d tidak ditemukan di tabel sesi_kuliah, skipping line %d", idBentrok, i)
+				return
+			}
 
-		log.Println("insert index ", i)
+			// Insert ke database
+			bentrok := domain.SesiKuliahBentrok{
+				ID:        idSesiKuliah,
+				IDBentrok: idBentrok,
+			}
+
+			if err := db.Create(&bentrok).Error; err != nil {
+				log.Printf("Error in line %v: %v", i, err)
+				return
+			}
+
+			log.Printf("Insert successful for index %d", i)
+		}(i, record)
 	}
 
+	wg.Wait() // Tunggu sampai semua goroutine selesai
 	log.Println("YEY SUCCESS")
 }
 
@@ -861,7 +951,7 @@ DATA TOLOL MANA ADA ID DAN RUANG 0 OK KITA BUAT DI BOLEH NULL AJA
 OK NOW WORK
 */
 func TestJadwalTawar(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/jadwal_tawar.csv")
 	IfErrNotNil(err)
 	defer file.Close()
@@ -960,7 +1050,7 @@ func TestJadwalTawar(t *testing.T) {
 
 		// Insert ke database
 		if err := db.Create(&tawar).Error; err != nil {
-			log.Fatalf("Error in line %v: %v", i, err)
+			log.Printf("Error in line %v: %v", i, err)
 		}
 
 		log.Println("insert index ", i)
@@ -971,7 +1061,7 @@ func TestJadwalTawar(t *testing.T) {
 
 // test ualang pake go routine
 func TestKrsRecord(t *testing.T) {
-	db := conf.InitDB()
+
 	file, err := os.Open("data_krs/krs_record.csv")
 	if err != nil {
 		log.Fatalf("Error opening file: %v", err)
@@ -981,7 +1071,7 @@ func TestKrsRecord(t *testing.T) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV file: %v", err)
+		log.Printf("Error reading CSV file: %v", err)
 	}
 
 	var wg sync.WaitGroup          // Membuat WaitGroup untuk menunggu semua goroutine selesai
@@ -1066,12 +1156,11 @@ func TestKrsRecord(t *testing.T) {
 }
 
 func TestKrsRecordLog(t *testing.T) {
-	db := conf.InitDB()
 
 	// Membuka file CSV
 	file, err := os.Open("data_krs/krs_record_log.csv")
 	if err != nil {
-		log.Fatalf("Error opening file: %v", err)
+		log.Printf("Error opening file: %v", err)
 	}
 	defer file.Close()
 
@@ -1079,14 +1168,14 @@ func TestKrsRecordLog(t *testing.T) {
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 	if err != nil {
-		log.Fatalf("Error reading CSV file: %v", err)
+		log.Printf("Error reading CSV file: %v", err)
 	}
 
 	const layout = "2006-01-02 15:04:05.000"
 
 	// Membatasi goroutine menjadi 50
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 5) // Channel untuk membatasi jumlah goroutine
+	sem := make(chan struct{}, 15) // Channel untuk membatasi jumlah goroutine
 
 	for i, record := range records {
 		if i == 0 {

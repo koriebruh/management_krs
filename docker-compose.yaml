@@ -9,6 +9,7 @@ services:
       MYSQL_USER: 'korie'
       MYSQL_PASSWORD: 'korie123'
       MYSQL_ROOT_PASSWORD: 'korie123'
+      MAX_CONNECTIONS: "1000"
     volumes:
       - mysql-db:/var/lib/mysql
     healthcheck: # Tambahkan healthcheck
@@ -33,8 +34,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    env_file:
-      - config.json
     ports:
       - "3000:3000"
     depends_on:

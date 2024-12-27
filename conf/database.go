@@ -84,8 +84,8 @@ func InitDB() *gorm.DB {
 	if err != nil {
 		log.Fatalf("failed to get *sql.DB from GORM: %v", err)
 	}
-	sqlDB.SetMaxOpenConns(100)
-	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(200)
+	sqlDB.SetMaxIdleConns(80)
 	sqlDB.SetConnMaxLifetime(60)
 
 	//if err != nil {

@@ -1,4 +1,69 @@
-# API Documentation
+
+---
+
+## **Persyaratan Sistem**
+Pastikan Anda memiliki:
+
+1. **Docker** (versi terbaru)
+2. **Go** (versi 1.22.6 atau lebih baru)
+3. Akses ke file konfigurasi yang relevan dan dataset yang sesuai
+
+---
+
+## **Langkah-Langkah Menjalankan API**
+
+### 1. **Menjalankan API dengan Docker Compose**
+Untuk memulai layanan, cukup jalankan perintah berikut:
+
+```bash
+docker compose up -d
+```
+
+Perintah ini akan menjalankan semua layanan yang dibutuhkan dalam mode latar belakang (*detached mode*). Pastikan semua kontainer berjalan dengan lancar.
+
+### 2. **Masuk ke dalam Container**
+Setelah semua kontainer berjalan, masuk ke kontainer aplikasi utama untuk menjalankan perintah lebih lanjut:
+
+```bash
+docker exec -it krs-management-go-app-1 bash
+```
+
+Anda sekarang berada di dalam lingkungan kontainer aplikasi.
+
+---
+
+## **Melakukan Unit Test dan Memasukkan Data**
+API ini dilengkapi dengan unit test untuk memastikan integritas dan validitas data saat dimasukkan ke dalam sistem.
+
+### 1. **TestDataInsertion1**
+Proses ini bertanggung jawab untuk memasukkan data awal seperti mahasiswa, mata kuliah, ruang, sesi kuliah, dan tahun ajaran:
+
+```bash
+go test -v -run TestDataInsertion1 -timeout 30m
+```
+
+### 2. **TestDataInsertion2**
+Proses ini menangani data tambahan seperti tagihan mahasiswa, IP semester, jadwal input KRS, dan data terkait lainnya:
+
+```bash
+go test -v -run TestDataInsertion2 -timeout 30m
+```
+
+### 3. **TestDataInsertion3**
+Proses ini menangani data kompleks seperti validasi KRS, sesi kuliah bentrok, jadwal tawar, dan log KRS:
+
+```bash
+go test -v -run TestDataInsertion3 -timeout 30m
+```
+
+> **Catatan:** Jika dataset besar atau pengujian membutuhkan waktu lebih lama, Anda dapat menyesuaikan timeout menggunakan flag `-timeout`.
+
+---
+
+Selamat menggunakan API KRS Management! dengan membuka file documentation yang terdapat payload postman yang bisa anda import 🚀
+
+
+
 
 ## Overview
 This is the API documentation for the Student Information System. All endpoints require authentication via a JWT token, except for the login endpoint. The token must be included in the `Authorization` header as `Bearer <token>`.

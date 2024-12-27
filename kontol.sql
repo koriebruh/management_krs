@@ -659,3 +659,10 @@ FROM (
 
 SELECT COUNT(*) AS total
 FROM daftar_nilai;
+
+drop database krs_management;
+create database krs_management;
+use krs_management;
+show tables ;
+
+select * from ip_semester;
