@@ -151,10 +151,10 @@ func (s StudentStatusServicesImpl) InformationStudent(ctx context.Context, NimMh
 	if repositoryData.Kelas == "1" {
 		result.Kelas = "pagi"
 	} else if repositoryData.Kelas == "2" {
-		result.Kelas = "pagi"
+		result.Kelas = "malam"
 
 	} else if repositoryData.Kelas == "3" {
-		result.Kelas = "pagi"
+		result.Kelas = "kariyawan"
 	} else {
 		result.Kelas = "belum dipilih"
 	}
@@ -409,7 +409,8 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 
 		//JIKA NANTI ERROR BEARRTI ANTARA foundOfferProdi DAN foundSchedule MALSAHNAYA DATANYA ANEH KADANG TIDAKA DI SALAH 1
 		TA, _ := strconv.Atoi(kodeTA)
-		record := domain.KrsRecord{
+		var record domain.KrsRecord
+		recorOfferProdi := domain.KrsRecord{
 			TA:       TA,
 			Kdmk:     foundOfferProdi.KodeMataKuliah,
 			IDJadwal: foundOfferProdi.Id,
@@ -417,6 +418,23 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 			Sts:      "B", // B MAKSUNYA APA G PAHAM GA DI JELASIN JUGA DI
 			Sks:      foundOfferProdi.JumlahSKS,
 			Modul:    0,
+		}
+
+		recordOfferScheudle := domain.KrsRecord{
+			TA:       TA,
+			Kdmk:     foundSchedule.Kelompok,
+			IDJadwal: foundSchedule.Id,
+			NimDinus: nimDinus,
+			Sts:      "B",
+			Sks:      foundSchedule.JumlahSKS,
+			Modul:    0,
+		}
+
+		// Gunakan record dari foundOfferProdi jika `Kdmk` tidak kosong, jika kosong gunakan record dari foundSchedule
+		if recorOfferProdi.Kdmk != "" {
+			record = recorOfferProdi
+		} else {
+			record = recordOfferScheudle
 		}
 
 		if err = s.StudentStatusRepository.InsertKrs(ctx, tx, record); err != nil {
