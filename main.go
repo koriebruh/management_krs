@@ -5,11 +5,13 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"koriebruh/try/conf"
 	"koriebruh/try/controller"
 	"koriebruh/try/repository"
 	"koriebruh/try/service"
 	"log"
+	"time"
 )
 
 func main() {
@@ -29,7 +31,28 @@ func main() {
 	studentStatusServices := service.NewStudentStatusServices(db, studentStatusRepository, validate)
 	studentStatusController := controller.NewStudentStatusController(studentStatusServices)
 
-	app := fiber.New()
+	//app := fiber.New()
+	app := fiber.New(fiber.Config{
+		Prefork:      true, // Gunakan semua core CPU
+		ReadTimeout:  30 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  30 * time.Second,
+		BodyLimit:    4 * 1024 * 1024, // Maksimal 4MB untuk payload
+	})
+
+	app.Use(limiter.New(limiter.Config{
+		Max:        100,
+		Expiration: 1 * time.Minute,
+		KeyGenerator: func(c *fiber.Ctx) string {
+			return c.IP() // Berdasarkan IP pengguna
+		},
+		LimitReached: func(c *fiber.Ctx) error {
+			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
+				"message": "Terlalu banyak permintaan. Coba lagi nanti.",
+			})
+		},
+	}))
+
 	app.Use(cors.New(cors.Config{
 		AllowOrigins:     "*",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",

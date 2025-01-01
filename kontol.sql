@@ -658,7 +658,7 @@ FROM (
 
 
 SELECT COUNT(*) AS total
-FROM daftar_nilai;
+FROM mahasiswa_dinus;
 
 drop database krs_management;
 create database krs_management;
@@ -666,3 +666,35 @@ use krs_management;
 show tables ;
 
 select * from ip_semester;
+
+select nim_dinus as nd from mahasiswa_dinus limit 1200;
+select * from mahasiswa_dinus where nim_dinus = '0438b811b2c935373dd425540c388ec1';
+
+SHOW INDEX FROM mahasiswa_dinus;
+EXPLAIN SELECT * FROM mahasiswa_dinus WHERE nim_dinus = '0386d19d2c53289bd518c30e1bd0fc42' ORDER BY id LIMIT 1;
+SHOW VARIABLES LIKE 'thread%';
+
+
+SHOW VARIABLES LIKE 'max_connections';
+
+select * from herregist_mahasiswa where nim_dinus = '00b4f80268c6cc31f651f31186ee67d9';
+
+
+desc mahasiswa_dinus;
+
+
+#NIM UNTUK UJI COBA yang data nya semua ada
+SELECT md.nim_dinus
+FROM mahasiswa_dinus md
+    LEFT JOIN herregist_mahasiswa he ON he.nim_dinus = md.nim_dinus
+    RIGHT JOIN krs_record kr ON kr.nim_dinus = md.nim_dinus
+    WHERE md.akdm_stat = 1;
+
+select * from krs_record where nim_dinus = '00a689ff4f4f843583773ec21eae0441';
+
+
+
+
+
+
+select * from mhs_ijin_krs;
