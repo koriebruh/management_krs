@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 )
 
 var ctx = context.Background()
@@ -642,6 +643,36 @@ func TestDeleteKrsYGDIpilh(t *testing.T) {
 
 	if err != nil {
 		panic(err)
+	}
+
+}
+
+func TestWeeh(t *testing.T) {
+
+	loc, _ := time.LoadLocation("Asia/Jakarta")
+	inputDate := time.Now().In(loc)
+	//inputDate, _ := time.ParseInLocation("2006-01-02 15:04:05", "2024-08-13 01:00:00", loc) // unutk misal nyoba dengan tangal yg sesuai
+
+	var jadwal struct {
+		TglMulai   time.Time `gorm:"column:tgl_mulai"`
+		TglSelesai time.Time `gorm:"column:tgl_selesai"`
+	}
+
+	prodi := "A11"
+	err := db.Raw(`
+		SELECT tgl_mulai, tgl_selesai 
+		FROM jadwal_input_krs 
+		WHERE prodi = ? LIMIT 1
+	`, prodi).Scan(&jadwal).Error
+	if err != nil {
+		log.Fatalf("Failed to execute query: %v", err)
+	}
+
+	if (inputDate.After(jadwal.TglMulai) || inputDate.Equal(jadwal.TglMulai)) &&
+		(inputDate.Before(jadwal.TglSelesai) || inputDate.Equal(jadwal.TglSelesai)) {
+		fmt.Println("Tanggal input valid")
+	} else {
+		fmt.Println("Tanggal input tidak sesuai dengan rentang jadwal")
 	}
 
 }

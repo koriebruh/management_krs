@@ -320,11 +320,35 @@ func (s StudentStatusServicesImpl) InsertSchedule(ctx context.Context, nimDinus 
 		}
 		Prodi := userExist.Prodi
 
-		////CEK APAKAH PUNYA IJIN INSERT KRS di luar jadwal
-		//_, err = s.StudentStatusRepository.InsertKRSPermit(ctx, tx, nimDinus)
-		//if err != nil {
-		//	return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("no have permit insert krs"))
-		//}
+		//APKAH INPUT SESUAI JADWAL
+		loc, _ := time.LoadLocation("Asia/Jakarta")
+		inputDate := time.Now().In(loc)
+		//inputDate, _ := time.ParseInLocation("2006-01-02 15:04:05", "2024-08-13 01:00:00", loc) // unutk misal nyoba dengan tangal A11
+
+		var jadwal struct {
+			TglMulai   time.Time `gorm:"column:tgl_mulai"`
+			TglSelesai time.Time `gorm:"column:tgl_selesai"`
+		}
+
+		err = tx.Raw(`
+				SELECT tgl_mulai, tgl_selesai 
+				FROM jadwal_input_krs 
+				WHERE prodi = ? LIMIT 1
+			`, Prodi).Scan(&jadwal).Error
+		if err != nil {
+			return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("failed excute query"))
+		}
+
+		if (inputDate.After(jadwal.TglMulai) || inputDate.Equal(jadwal.TglMulai)) &&
+			(inputDate.Before(jadwal.TglSelesai) || inputDate.Equal(jadwal.TglSelesai)) {
+			fmt.Println("Tanggal input valid")
+		} else {
+			//CEK APAKAH PUNYA IJIN INSERT KRS di luar jadwal
+			_, err = s.StudentStatusRepository.InsertKRSPermit(ctx, tx, nimDinus)
+			if err != nil {
+				return fmt.Errorf("%w: %v", helper.ErrBadRequest, fmt.Errorf("no have permit insert krs di luar jadwal"))
+			}
+		}
 
 		//KRS YG SUDAH DI VALIDASI TIDAK BISA INSERT
 		statusKRS, _ := s.StudentStatusRepository.StatusKRS(ctx, tx, nimDinus, kodeTA)

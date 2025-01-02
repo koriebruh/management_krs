@@ -690,11 +690,3 @@ FROM mahasiswa_dinus md
     RIGHT JOIN krs_record kr ON kr.nim_dinus = md.nim_dinus
     WHERE md.akdm_stat = 1;
 
-select * from krs_record where nim_dinus = '00a689ff4f4f843583773ec21eae0441';
-
-
-
-
-
-
-select * from mhs_ijin_krs;
